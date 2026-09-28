@@ -139,18 +139,37 @@
 
     .list {
       flex: 1;
-      padding: 0.75rem 1rem calc(6rem + env(safe-area-inset-bottom));
+      padding: 0.75rem 1rem 1.5rem;
       overflow-y: auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-content: flex-start;
+      gap: 0.1rem 0.85rem;
+      text-align: center;
+    }
+
+    .mainList {
+      padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+    }
+
+    .searchList {
+      display: block;
+      text-align: left;
+    }
+
+    .moveList {
+      padding-bottom: 1rem;
     }
 
     .word {
-      display: block;
-      width: 100%;
+      display: inline-block;
+      width: auto;
       margin: 0;
-      padding: 0.48rem 0;
+      padding: 0.22rem 0.4rem;
       border: 0;
       background: none;
-      text-align: left;
+      text-align: center;
       color: var(--text);
       font-weight: 520;
       line-height: 1.12;
@@ -200,10 +219,52 @@
     }
 
     .emptyMsg {
-      padding: 3rem 1rem;
+      width: 100%;
+      padding: 2.5rem 1rem;
       text-align: center;
       color: var(--muted);
       font-size: 1rem;
+    }
+
+    .nucleus {
+      width: 100%;
+      text-align: center;
+      padding: 1.4rem 0.5rem 0.5rem;
+      font-weight: 660;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      overflow-wrap: anywhere;
+      color: var(--text);
+    }
+
+    .movebar {
+      display: flex;
+      gap: 0.6rem;
+      padding: 0.7rem 1rem calc(0.7rem + env(safe-area-inset-bottom));
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(7, 8, 12, 0.92);
+      backdrop-filter: blur(12px);
+    }
+
+    .ghostbtn,
+    .primarybtn {
+      flex: 1;
+      border: 0;
+      border-radius: 14px;
+      padding: 0.8rem;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .ghostbtn {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+    }
+
+    .primarybtn {
+      background: var(--accent);
+      color: #07080c;
+      font-weight: 650;
     }
 
     .fab {
@@ -382,7 +443,7 @@
       </button>
     </header>
 
-    <main id="list" class="list" aria-live="polite"></main>
+    <main id="list" class="list mainList" aria-live="polite"></main>
 
     <button id="addBtn" class="fab" aria-label="Add word">
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -412,8 +473,31 @@
       <div class="iconbtn spacer" aria-hidden="true"></div>
     </header>
 
-    <main id="searchResults" class="list"></main>
+    <main id="searchResults" class="list searchList"></main>
     <div id="searchEmpty" class="emptyMsg hidden">No words found.</div>
+  </div>
+
+  <div id="moveOverlay" class="overlay hidden" role="dialog" aria-label="Move word">
+    <header class="topbar">
+      <button id="moveBackBtn" class="iconbtn" aria-label="Back">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+      </button>
+
+      <div class="titles">
+        <h1 id="moveLabel">Cosmos</h1>
+      </div>
+
+      <div class="iconbtn spacer" aria-hidden="true"></div>
+    </header>
+
+    <main id="moveList" class="list moveList"></main>
+
+    <div class="movebar">
+      <button type="button" id="moveCancelBtn" class="ghostbtn">Cancel</button>
+      <button type="button" id="moveConfirmBtn" class="primarybtn">Move here</button>
+    </div>
   </div>
 
   <dialog id="addDialog">
@@ -464,6 +548,7 @@
   <dialog id="actionDialog">
     <menu>
       <button type="button" id="actionRename">Rename</button>
+      <button type="button" id="actionMove">Move into…</button>
       <button type="button" id="actionDelete" class="danger">Delete</button>
       <button type="button" id="actionCancel">Cancel</button>
     </menu>
@@ -492,6 +577,13 @@
       const searchResults = el("searchResults");
       const searchEmpty = el("searchEmpty");
 
+      const moveOverlay = el("moveOverlay");
+      const moveBackBtn = el("moveBackBtn");
+      const moveLabel = el("moveLabel");
+      const moveList = el("moveList");
+      const moveConfirmBtn = el("moveConfirmBtn");
+      const moveCancelBtn = el("moveCancelBtn");
+
       const addDialog = el("addDialog");
       const addForm = el("addForm");
       const addInput = el("addInput");
@@ -508,6 +600,7 @@
 
       const actionDialog = el("actionDialog");
       const actionRename = el("actionRename");
+      const actionMove = el("actionMove");
       const actionDelete = el("actionDelete");
       const actionCancel = el("actionCancel");
 
@@ -522,6 +615,10 @@
 
       let pendingActionId = "";
       let pendingDeleteParentId = "";
+
+      let moveSourceId = "";
+      let movePickerId = "";
+      let moveExcludedSet = null;
 
       let longPressTimer = null;
       let suppressClick = false;
@@ -723,6 +820,37 @@
         return ids;
       }
 
+      async function collectSubtreeIdSet(rootId) {
+        const set = new Set([rootId]);
+        const queue = [rootId];
+
+        while (queue.length) {
+          const parentId = queue.shift();
+          const children = await getChildren(parentId);
+
+          for (const child of children) {
+            set.add(child.id);
+            queue.push(child.id);
+          }
+        }
+
+        return set;
+      }
+
+      async function ancestorsIncludingSelf(id) {
+        const arr = [];
+        let cur = id;
+
+        while (cur) {
+          arr.push(cur);
+          const n = await get(cur);
+          if (!n) break;
+          cur = n.parentId || "";
+        }
+
+        return arr;
+      }
+
       async function deleteNode(id) {
         const node = await get(id);
         if (!node) return null;
@@ -765,6 +893,57 @@
         }
 
         return node;
+            }
+      async function moveNode(id, newParentId) {
+        const node = await get(id);
+        if (!node) return;
+
+        const oldParentId = node.parentId || "";
+        if (oldParentId === newParentId) {
+          node.parentId = newParentId;
+          node.updatedAt = Date.now();
+          await put(node);
+          return;
+        }
+
+        const size = 1 + (node.descendantCount || 0);
+        const depth = 1 + (node.maxDepth || 0);
+
+        const chainOld = await ancestorsIncludingSelf(oldParentId);
+        const chainNew = await ancestorsIncludingSelf(newParentId);
+        const oldSet = new Set(chainOld);
+        const newSet = new Set(chainNew);
+
+        node.parentId = newParentId;
+        node.updatedAt = Date.now();
+        await put(node);
+
+        for (let i = 0; i < chainNew.length; i++) {
+          const xid = chainNew[i];
+          if (oldSet.has(xid)) continue;
+
+          const x = await get(xid);
+          if (!x) continue;
+
+          x.descendantCount = (x.descendantCount || 0) + size;
+          const contributed = depth + i;
+          if (contributed > (x.maxDepth || 0)) x.maxDepth = contributed;
+          x.updatedAt = Date.now();
+          await put(x);
+        }
+
+        for (const xid of chainOld) {
+          const x = await get(xid);
+          if (!x) continue;
+
+          if (!newSet.has(xid)) {
+            x.descendantCount = Math.max(0, (x.descendantCount || 0) - size);
+          }
+
+          x.maxDepth = await computeMaxDepth(xid);
+          x.updatedAt = Date.now();
+          await put(x);
+        }
       }
 
       async function getPathTerms(id) {
@@ -807,6 +986,18 @@
         return btn;
       }
 
+      function createNavButton(node) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "word " + sizeClass(mass(node));
+        btn.textContent = node.term;
+        btn.addEventListener("click", () => {
+          movePickerId = node.id;
+          renderMove();
+        });
+        return btn;
+      }
+
       function renderList(children, insideNode) {
         list.innerHTML = "";
 
@@ -822,7 +1013,7 @@
 
         children.sort(compareNodes);
 
-for (const node of children) {
+        for (const node of children) {
           list.appendChild(createWordButton(node));
         }
       }
@@ -853,6 +1044,12 @@ for (const node of children) {
           if (token !== renderToken) return;
 
           renderList(children, true);
+
+          const nuc = document.createElement("div");
+          nuc.className = "nucleus";
+          nuc.textContent = node.term;
+          nuc.style.fontSize = "var(--fs" + tier(mass(node)) + ")";
+          list.insertBefore(nuc, list.firstChild);
         } else {
           screenTitle.textContent = "Word Cosmos";
           screenPath.textContent = "";
@@ -1066,6 +1263,50 @@ for (const node of children) {
         searchInput.blur();
       }
 
+      async function openMovePicker(sourceId) {
+        moveSourceId = sourceId;
+        moveExcludedSet = await collectSubtreeIdSet(sourceId);
+        movePickerId = state.currentId;
+        await renderMove();
+        moveOverlay.classList.remove("hidden");
+      }
+
+      function closeMove() {
+        moveOverlay.classList.add("hidden");
+        moveSourceId = "";
+        movePickerId = "";
+        moveExcludedSet = null;
+      }
+
+      async function renderMove() {
+        const id = movePickerId;
+        let currentNode = null;
+        if (id) currentNode = await get(id);
+
+        moveLabel.textContent = currentNode ? currentNode.term : "Cosmos · top level";
+
+        const children = await getChildren(id);
+        const filtered = moveExcludedSet
+          ? children.filter((c) => !moveExcludedSet.has(c.id))
+          : children;
+        filtered.sort(compareNodes);
+
+        moveList.innerHTML = "";
+
+        if (!filtered.length) {
+          const m = document.createElement("div");
+          m.className = "emptyMsg";
+          m.textContent = "No other words here. Use “Move here” below.";
+          moveList.appendChild(m);
+        } else {
+          for (const c of filtered) moveList.appendChild(createNavButton(c));
+        }
+
+        moveConfirmBtn.textContent = currentNode
+          ? "Move into “" + currentNode.term + "”"
+          : "Move to Cosmos (top level)";
+      }
+
       function bindEvents() {
         backBtn.addEventListener("click", async () => {
           if (!searchOverlay.classList.contains("hidden")) {
@@ -1160,6 +1401,15 @@ for (const node of children) {
           }, 50);
         });
 
+        actionMove.addEventListener("click", async () => {
+          actionDialog.close();
+
+          const node = await get(pendingActionId);
+          if (!node) return;
+
+          await openMovePicker(pendingActionId);
+        });
+
         actionDelete.addEventListener("click", async () => {
           actionDialog.close();
 
@@ -1170,6 +1420,28 @@ for (const node of children) {
           deleteDialog.showModal();
         });
 
+        moveBackBtn.addEventListener("click", async () => {
+          if (!movePickerId) {
+            closeMove();
+            return;
+          }
+
+          const n = await get(movePickerId);
+          movePickerId = n ? (n.parentId || "") : "";
+          await renderMove();
+        });
+
+        moveCancelBtn.addEventListener("click", closeMove);
+
+        moveConfirmBtn.addEventListener("click", async () => {
+          if (!moveSourceId) return;
+
+          const target = movePickerId;
+          closeMove();
+          await moveNode(moveSourceId, target);
+          await render();
+        });
+
         window.addEventListener("popstate", (event) => {
           const nextId = event.state?.id ?? idFromHash();
           currentDepth = event.state?.depth ?? 0;
@@ -1178,8 +1450,9 @@ for (const node of children) {
         });
 
         document.addEventListener("keydown", (event) => {
-          if (event.key === "Escape" && !searchOverlay.classList.contains("hidden")) {
-            closeSearch();
+          if (event.key === "Escape") {
+            if (!searchOverlay.classList.contains("hidden")) closeSearch();
+            else if (!moveOverlay.classList.contains("hidden")) closeMove();
           }
         });
       }
