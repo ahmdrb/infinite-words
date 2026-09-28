@@ -1,4 +1,4 @@
-const CACHE_NAME = "word-cosmos-v4";
+const CACHE_NAME = "word-cosmos-v5";
 
 const ASSETS = [
   "./wordmos.html",
@@ -41,20 +41,22 @@ self.addEventListener("fetch", (event) => {
 
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const copy = response.clone();
-          caches
-            .open(CACHE_NAME)
-            .then((cache) => cache.put(request, copy))
-            .catch(() => {});
-          return response;
-        })
-        .catch(() =>
-          caches
-            .match(request)
-            .then((cached) => cached || caches.match("./wordmos.html"))
-        )
+      caches.match(request).then((cached) => {
+        const network = fetch(request)
+          .then((response) => {
+            if (response && response.ok) {
+              const copy = response.clone();
+              caches
+                .open(CACHE_NAME)
+                .then((cache) => cache.put(request, copy))
+                .catch(() => {});
+            }
+            return response;
+          })
+          .catch(() => cached || caches.match("./wordmos.html"));
+
+        return cached || network;
+      })
     );
     return;
   }
