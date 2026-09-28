@@ -623,7 +623,6 @@
       let longPressTimer = null;
       let suppressClick = false;
       let searchTimer = null;
-
       function uid() {
         if (window.crypto && typeof crypto.randomUUID === "function") {
           return crypto.randomUUID();
@@ -893,7 +892,7 @@
         }
 
         return node;
-            }
+      }
       async function moveNode(id, newParentId) {
         const node = await get(id);
         if (!node) return;
@@ -1306,7 +1305,6 @@
           ? "Move into “" + currentNode.term + "”"
           : "Move to Cosmos (top level)";
       }
-
       function bindEvents() {
         backBtn.addEventListener("click", async () => {
           if (!searchOverlay.classList.contains("hidden")) {
@@ -1436,9 +1434,10 @@
         moveConfirmBtn.addEventListener("click", async () => {
           if (!moveSourceId) return;
 
+          const source = moveSourceId;
           const target = movePickerId;
           closeMove();
-          await moveNode(moveSourceId, target);
+          await moveNode(source, target);
           await render();
         });
 
