@@ -1,0 +1,22 @@
+{
+  "name": "Word Cosmos",
+  "short_name": "Cosmos",
+  "description": "A quiet tree of words that grow by containing other words.",
+  "id": "./thething.html",
+  "start_url": "./thething.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#07080c",
+  "theme_color": "#07080c",
+  "lang": "en",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
