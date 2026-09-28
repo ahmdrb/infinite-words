@@ -423,6 +423,13 @@
 <body>
   <div id="app">
     <header class="topbar">
+      <button id="homeBtn" class="iconbtn" aria-label="Cosmos (top level)">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 12l8-7 8 7" />
+          <path d="M6 10.5V19h12v-8.5" />
+          <path d="M10 19v-4.5h4V19" />
+        </svg>
+      </button>
       <button id="backBtn" class="iconbtn" aria-label="Back">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M15 18l-6-6 6-6" />
@@ -574,6 +581,7 @@
       const el = (id) => document.getElementById(id);
 
       const backBtn = el("backBtn");
+      const homeBtn = el("homeBtn");
       const searchBtn = el("searchBtn");
       const addBtn = el("addBtn");
       const screenTitle = el("screenTitle");
@@ -1033,6 +1041,7 @@
         const id = state.currentId;
 
         backBtn.style.visibility = id ? "visible" : "hidden";
+        homeBtn.style.visibility = id ? "visible" : "hidden";
 
         if (id) {
           const node = await get(id);
@@ -1418,6 +1427,9 @@
           replaceTo(node ? node.parentId : "");
         });
 
+        homeBtn.addEventListener("click", () => {
+          pushTo("");
+        });
         searchBtn.addEventListener("click", openSearch);
         closeSearchBtn.addEventListener("click", closeSearch);
 
@@ -1538,7 +1550,7 @@
           const target = movePickerId;
           closeMove();
           await moveNode(source, target);
-          await render();
+          pushTo(target);
         });
 
         window.addEventListener("popstate", (event) => {
@@ -1579,7 +1591,10 @@
           navigator.storage.persist().catch(() => {});
         }
 
-        if ("serviceWorker" in navigator) {
+if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.addEventListener("controllerchange", () => {
+            window.location.reload();
+          });
           window.addEventListener("load", () => {
             navigator.serviceWorker.register("./sw.js").catch(() => {});
           });
