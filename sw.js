@@ -1,7 +1,7 @@
-const CACHE_NAME = "word-cosmos-v1";
+const CACHE_NAME = "word-cosmos-v2";
 
 const ASSETS = [
-  "./thething.html",
+  "./wordmos.html",
   "./manifest.json",
   "./icon.svg"
 ];
@@ -44,17 +44,18 @@ self.addEventListener("fetch", (event) => {
       fetch(request)
         .then((response) => {
           const copy = response.clone();
-
           caches
             .open(CACHE_NAME)
-            .then((cache) => cache.put("./thething.html", copy))
+            .then((cache) => cache.put(request, copy))
             .catch(() => {});
-
           return response;
         })
-        .catch(() => caches.match("./thething.html"))
+        .catch(() =>
+          caches
+            .match(request)
+            .then((cached) => cached || caches.match("./wordmos.html"))
+        )
     );
-
     return;
   }
 
@@ -64,13 +65,11 @@ self.addEventListener("fetch", (event) => {
         .then((response) => {
           if (response && response.ok) {
             const copy = response.clone();
-
             caches
               .open(CACHE_NAME)
               .then((cache) => cache.put(request, copy))
               .catch(() => {});
           }
-
           return response;
         })
         .catch(() => cached);
