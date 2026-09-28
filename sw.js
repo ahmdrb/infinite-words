@@ -1,4 +1,4 @@
-const CACHE_NAME = "word-cosmos-v5";
+const CACHE_NAME = "word-cosmos-v6";
 
 const ASSETS = [
   "./wordmos.html",
@@ -38,6 +38,8 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
 
   if (url.origin !== self.location.origin) return;
+
+  if (url.pathname.endsWith("/sw.js")) return;
 
   if (request.mode === "navigate") {
     event.respondWith(
