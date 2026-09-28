@@ -162,6 +162,10 @@
       padding-bottom: 1rem;
     }
 
+    .movesearchrow {
+      padding: 0.25rem 1rem 0.5rem;
+    }
+
     .word {
       display: inline-block;
       width: auto;
@@ -226,17 +230,6 @@
       font-size: 1rem;
     }
 
-    .nucleus {
-      width: 100%;
-      text-align: center;
-      padding: 1.4rem 0.5rem 0.5rem;
-      font-weight: 660;
-      line-height: 1.05;
-      letter-spacing: -0.02em;
-      overflow-wrap: anywhere;
-      color: var(--text);
-    }
-
     .movebar {
       display: flex;
       gap: 0.6rem;
@@ -265,6 +258,12 @@
       background: var(--accent);
       color: #07080c;
       font-weight: 650;
+    }
+
+    .primarybtn:disabled {
+      background: rgba(138, 180, 248, 0.28);
+      color: rgba(232, 234, 240, 0.55);
+      cursor: default;
     }
 
     .fab {
@@ -492,6 +491,16 @@
       <div class="iconbtn spacer" aria-hidden="true"></div>
     </header>
 
+    <div class="movesearchrow">
+      <input
+        id="moveSearchInput"
+        type="search"
+        placeholder="Search destination words"
+        autocomplete="off"
+        spellcheck="false"
+      />
+    </div>
+
     <main id="moveList" class="list moveList"></main>
 
     <div class="movebar">
@@ -583,6 +592,7 @@
       const moveList = el("moveList");
       const moveConfirmBtn = el("moveConfirmBtn");
       const moveCancelBtn = el("moveCancelBtn");
+      const moveSearchInput = el("moveSearchInput");
 
       const addDialog = el("addDialog");
       const addForm = el("addForm");
@@ -623,6 +633,7 @@
       let longPressTimer = null;
       let suppressClick = false;
       let searchTimer = null;
+      let moveSearchTimer = null;
       function uid() {
         if (window.crypto && typeof crypto.randomUUID === "function") {
           return crypto.randomUUID();
@@ -1043,7 +1054,6 @@
           if (token !== renderToken) return;
 
           renderList(children, true);
-          
         } else {
           screenTitle.textContent = "Word Cosmos";
           screenPath.textContent = "";
@@ -1198,6 +1208,45 @@
         });
       }
 
+      function moveSearchNodes(query, excludeSet) {
+        return new Promise((resolve) => {
+          if (!db || !query) {
+            resolve([]);
+            return;
+          }
+
+          const results = [];
+          const tx = db.transaction(STORE, "readonly");
+          const req = tx.objectStore(STORE).openCursor();
+
+          req.onsuccess = (event) => {
+            const cursor = event.target.result;
+
+            if (!cursor) {
+              results.sort(compareResults);
+              resolve(results.slice(0, 50));
+              return;
+            }
+
+            const node = cursor.value;
+
+            if (
+              node.termLower &&
+              node.termLower.includes(query) &&
+              !(excludeSet && excludeSet.has(node.id))
+            ) {
+              results.push({ node, m: mass(node) });
+            }
+
+            cursor.continue();
+          };
+
+          req.onerror = () => {
+            results.sort(compareResults);
+            resolve(results.slice(0, 50));
+          };
+        });
+            }
       async function runSearch() {
         const query = searchInput.value.trim().toLowerCase();
 
@@ -1261,6 +1310,7 @@
         moveSourceId = sourceId;
         moveExcludedSet = await collectSubtreeIdSet(sourceId);
         movePickerId = state.currentId;
+        moveSearchInput.value = "";
         await renderMove();
         moveOverlay.classList.remove("hidden");
       }
@@ -1273,6 +1323,13 @@
       }
 
       async function renderMove() {
+        const query = moveSearchInput.value.trim().toLowerCase();
+        moveConfirmBtn.disabled = false;
+        if (query) {
+          await renderMoveResults(query);
+          return;
+        }
+
         const id = movePickerId;
         let currentNode = null;
         if (id) currentNode = await get(id);
@@ -1299,6 +1356,49 @@
         moveConfirmBtn.textContent = currentNode
           ? "Move into “" + currentNode.term + "”"
           : "Move to Cosmos (top level)";
+      }
+
+      async function renderMoveResults(query) {
+        const matches = await moveSearchNodes(query, moveExcludedSet);
+
+        moveList.innerHTML = "";
+
+        moveConfirmBtn.disabled = true;
+        moveConfirmBtn.textContent = "Pick a destination";
+
+        if (!matches.length) {
+          const m = document.createElement("div");
+          m.className = "emptyMsg";
+          m.textContent = "No destination words found.";
+          moveList.appendChild(m);
+          return;
+        }
+
+        for (const item of matches) {
+          const pathTerms = await getPathTerms(item.node.parentId);
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "result";
+
+          const word = document.createElement("span");
+          word.className = "word " + sizeClass(item.m);
+          word.textContent = item.node.term;
+
+          const path = document.createElement("span");
+          path.className = "resultPath";
+          path.textContent = formatPath(pathTerms);
+
+          btn.append(word, path);
+
+          btn.addEventListener("click", () => {
+            movePickerId = item.node.id;
+            moveSearchInput.value = "";
+            renderMove();
+          });
+
+          moveList.appendChild(btn);
+        }
       }
       function bindEvents() {
         backBtn.addEventListener("click", async () => {
@@ -1425,6 +1525,11 @@
         });
 
         moveCancelBtn.addEventListener("click", closeMove);
+
+        moveSearchInput.addEventListener("input", () => {
+          clearTimeout(moveSearchTimer);
+          moveSearchTimer = setTimeout(renderMove, 180);
+        });
 
         moveConfirmBtn.addEventListener("click", async () => {
           if (!moveSourceId) return;
