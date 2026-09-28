@@ -1043,12 +1043,7 @@
           if (token !== renderToken) return;
 
           renderList(children, true);
-
-          const nuc = document.createElement("div");
-          nuc.className = "nucleus";
-          nuc.textContent = node.term;
-          nuc.style.fontSize = "var(--fs" + tier(mass(node)) + ")";
-          list.insertBefore(nuc, list.firstChild);
+          
         } else {
           screenTitle.textContent = "Word Cosmos";
           screenPath.textContent = "";
