@@ -1,0 +1,1221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Word Cosmos</title>
+  <meta name="theme-color" content="#07080c" />
+  <meta name="description" content="A quiet tree of words that grow by containing other words." />
+
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+
+  <style>
+    :root {
+      --bg: #07080c;
+      --surface: #101218;
+      --text: #e8eaf0;
+      --muted: #8b93a7;
+      --accent: #8ab4f8;
+      --danger: #ff6b6b;
+
+      --fs1: clamp(0.95rem, 3.2vw, 1.05rem);
+      --fs2: clamp(1.15rem, 4.0vw, 1.35rem);
+      --fs3: clamp(1.42rem, 5.4vw, 1.75rem);
+      --fs4: clamp(1.82rem, 7.0vw, 2.30rem);
+      --fs5: clamp(2.25rem, 9.0vw, 3.00rem);
+      --fs6: clamp(2.85rem, 12.0vw, 4.00rem);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family:
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior-y: contain;
+    }
+
+    body {
+      min-height: 100dvh;
+    }
+
+    button {
+      font: inherit;
+      color: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #app {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      padding-top: env(safe-area-inset-top);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.65rem 0.8rem;
+      background: rgba(7, 8, 12, 0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .titles {
+      flex: 1;
+      min-width: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 650;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .path {
+      margin-top: 2px;
+      min-height: 1rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .iconbtn {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      border: 0;
+      border-radius: 14px;
+      background: transparent;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    .iconbtn:active {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .iconbtn.spacer {
+      visibility: hidden;
+    }
+
+    svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .list {
+      flex: 1;
+      padding: 0.75rem 1rem calc(6rem + env(safe-area-inset-bottom));
+      overflow-y: auto;
+    }
+
+    .word {
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 0.48rem 0;
+      border: 0;
+      background: none;
+      text-align: left;
+      color: var(--text);
+      font-weight: 520;
+      line-height: 1.12;
+      letter-spacing: -0.015em;
+      overflow-wrap: anywhere;
+      user-select: none;
+      cursor: pointer;
+      transition:
+        font-size 180ms ease,
+        opacity 180ms ease;
+    }
+
+    .word:active {
+      opacity: 0.72;
+    }
+
+    .s1 {
+      font-size: var(--fs1);
+      opacity: 0.72;
+      font-weight: 480;
+    }
+
+    .s2 {
+      font-size: var(--fs2);
+      opacity: 0.80;
+    }
+
+    .s3 {
+      font-size: var(--fs3);
+      opacity: 0.88;
+    }
+
+    .s4 {
+      font-size: var(--fs4);
+      opacity: 0.95;
+      font-weight: 560;
+    }
+
+    .s5 {
+      font-size: var(--fs5);
+      font-weight: 620;
+    }
+
+    .s6 {
+      font-size: var(--fs6);
+      font-weight: 680;
+    }
+
+    .emptyMsg {
+      padding: 3rem 1rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .fab {
+      position: fixed;
+      right: max(1rem, env(safe-area-inset-right));
+      bottom: max(1rem, env(safe-area-inset-bottom));
+      width: 60px;
+      height: 60px;
+      border: 0;
+      border-radius: 22px;
+      background: var(--accent);
+      color: #07080c;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 12px 30px rgba(138, 180, 248, 0.22);
+      cursor: pointer;
+      z-index: 4;
+    }
+
+    .fab svg {
+      width: 28px;
+      height: 28px;
+      stroke-width: 2.4;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      padding-top: env(safe-area-inset-top);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .searchwrap {
+      flex: 1;
+      min-width: 0;
+    }
+
+    input[type="text"],
+    input[type="search"] {
+      width: 100%;
+      padding: 0.75rem 0.9rem;
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      border-radius: 14px;
+      background: #0d1017;
+      color: var(--text);
+      font: inherit;
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="search"]:focus {
+      border-color: var(--accent);
+    }
+
+    .result {
+      display: block;
+      width: 100%;
+      padding: 0.55rem 0;
+      border: 0;
+      background: none;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .result .word {
+      display: inline-block;
+      width: auto;
+      padding: 0;
+    }
+
+    .resultPath {
+      display: block;
+      margin-top: 0.15rem;
+      color: var(--muted);
+      font-size: 0.78rem;
+      overflow-wrap: anywhere;
+    }
+
+    dialog {
+      width: min(92vw, 360px);
+      padding: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    dialog::backdrop {
+      background: rgba(0, 0, 0, 0.58);
+    }
+
+    dialog h2 {
+      margin: 0 0 0.85rem;
+      font-size: 1rem;
+      font-weight: 650;
+    }
+
+    dialog p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+
+    dialog menu {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin: 1rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    dialog button {
+      border: 0;
+      border-radius: 14px;
+      padding: 0.68rem 0.9rem;
+      background: rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+    }
+
+    dialog button:active {
+      opacity: 0.82;
+    }
+
+    dialog button.primary {
+      background: var(--accent);
+      color: #07080c;
+      font-weight: 650;
+    }
+
+    dialog button.danger {
+      background: var(--danger);
+      color: #111111;
+      font-weight: 650;
+    }
+
+    #actionDialog menu {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    #actionDialog button {
+      width: 100%;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <button id="backBtn" class="iconbtn" aria-label="Back">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+      </button>
+
+      <div class="titles">
+        <h1 id="screenTitle">Word Cosmos</h1>
+        <div id="screenPath" class="path"></div>
+      </div>
+
+      <button id="searchBtn" class="iconbtn" aria-label="Search">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <path d="M20 20l-3.5-3.5" />
+        </svg>
+      </button>
+    </header>
+
+    <main id="list" class="list" aria-live="polite"></main>
+
+    <button id="addBtn" class="fab" aria-label="Add word">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+    </button>
+  </div>
+
+  <div id="searchOverlay" class="overlay hidden" role="dialog" aria-label="Search words">
+    <header class="topbar">
+      <button id="closeSearchBtn" class="iconbtn" aria-label="Close search">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18 6L6 18M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div class="searchwrap">
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Search words"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+
+      <div class="iconbtn spacer" aria-hidden="true"></div>
+    </header>
+
+    <main id="searchResults" class="list"></main>
+    <div id="searchEmpty" class="emptyMsg hidden">No words found.</div>
+  </div>
+
+  <dialog id="addDialog">
+    <form id="addForm">
+      <h2>New word</h2>
+      <input
+        id="addInput"
+        type="text"
+        placeholder="word"
+        autocomplete="off"
+        spellcheck="false"
+        required
+      />
+      <menu>
+        <button type="button" id="addCancel">Cancel</button>
+        <button type="submit" class="primary">Add</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="renameDialog">
+    <form id="renameForm">
+      <h2>Rename word</h2>
+      <input
+        id="renameInput"
+        type="text"
+        placeholder="word"
+        autocomplete="off"
+        spellcheck="false"
+        required
+      />
+      <menu>
+        <button type="button" id="renameCancel">Cancel</button>
+        <button type="submit" class="primary">Save</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="deleteDialog">
+    <h2>Delete?</h2>
+    <p>Delete this word and everything inside it?</p>
+    <menu>
+      <button type="button" id="deleteCancel">Cancel</button>
+      <button type="button" id="deleteConfirm" class="danger">Delete</button>
+    </menu>
+  </dialog>
+
+  <dialog id="actionDialog">
+    <menu>
+      <button type="button" id="actionRename">Rename</button>
+      <button type="button" id="actionDelete" class="danger">Delete</button>
+      <button type="button" id="actionCancel">Cancel</button>
+    </menu>
+  </dialog>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const DB_NAME = "word-cosmos";
+      const DB_VERSION = 1;
+      const STORE = "nodes";
+
+      const el = (id) => document.getElementById(id);
+
+      const backBtn = el("backBtn");
+      const searchBtn = el("searchBtn");
+      const addBtn = el("addBtn");
+      const screenTitle = el("screenTitle");
+      const screenPath = el("screenPath");
+      const list = el("list");
+
+      const searchOverlay = el("searchOverlay");
+      const closeSearchBtn = el("closeSearchBtn");
+      const searchInput = el("searchInput");
+      const searchResults = el("searchResults");
+      const searchEmpty = el("searchEmpty");
+
+      const addDialog = el("addDialog");
+      const addForm = el("addForm");
+      const addInput = el("addInput");
+      const addCancel = el("addCancel");
+
+      const renameDialog = el("renameDialog");
+      const renameForm = el("renameForm");
+      const renameInput = el("renameInput");
+      const renameCancel = el("renameCancel");
+
+      const deleteDialog = el("deleteDialog");
+      const deleteCancel = el("deleteCancel");
+      const deleteConfirm = el("deleteConfirm");
+
+      const actionDialog = el("actionDialog");
+      const actionRename = el("actionRename");
+      const actionDelete = el("actionDelete");
+      const actionCancel = el("actionCancel");
+
+      let db = null;
+
+      const state = {
+        currentId: ""
+      };
+
+      let currentDepth = 0;
+      let renderToken = 0;
+
+      let pendingActionId = "";
+      let pendingDeleteParentId = "";
+
+      let longPressTimer = null;
+      let suppressClick = false;
+      let searchTimer = null;
+
+      function uid() {
+        if (window.crypto && typeof crypto.randomUUID === "function") {
+          return crypto.randomUUID();
+        }
+        return "w-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+      }
+
+      function normalizeTerm(value) {
+        return String(value || "").replace(/\s+/g, " ").trim();
+      }
+
+      function mass(node) {
+        const descendants = node.descendantCount || 0;
+        const spreadBonus = Math.floor((node.childCount || 0) / 3);
+        const reachBonus = Math.floor((node.maxDepth || 0) / 2);
+        return descendants + spreadBonus + reachBonus;
+      }
+
+      function tier(m) {
+        if (m <= 0) return 1;
+        if (m <= 2) return 2;
+        if (m <= 7) return 3;
+        if (m <= 20) return 4;
+        if (m <= 60) return 5;
+        return 6;
+      }
+
+      function sizeClass(m) {
+        return "s" + tier(m);
+      }
+
+      function openDB() {
+        return new Promise((resolve, reject) => {
+          const req = indexedDB.open(DB_NAME, DB_VERSION);
+
+          req.onupgradeneeded = (event) => {
+            const database = event.target.result;
+
+            if (!database.objectStoreNames.contains(STORE)) {
+              const store = database.createObjectStore(STORE, { keyPath: "id" });
+              store.createIndex("parentId", "parentId", { unique: false });
+              store.createIndex("termLower", "termLower", { unique: false });
+              store.createIndex("updatedAt", "updatedAt", { unique: false });
+            }
+          };
+
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      function requestPromise(req) {
+        return new Promise((resolve, reject) => {
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      function readOnlyStore() {
+        return db.transaction(STORE, "readonly").objectStore(STORE);
+      }
+
+      function readWriteStore() {
+        return db.transaction(STORE, "readwrite").objectStore(STORE);
+      }
+
+      function get(id) {
+        if (!id) return Promise.resolve(null);
+        return requestPromise(readOnlyStore().get(id));
+      }
+
+      function put(node) {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE, "readwrite");
+          tx.objectStore(STORE).put(node);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+          tx.onabort = () => reject(tx.error);
+        });
+      }
+
+      function getChildren(parentId) {
+        return new Promise((resolve, reject) => {
+          const out = [];
+          const tx = db.transaction(STORE, "readonly");
+          const index = tx.objectStore(STORE).index("parentId");
+          const req = index.openCursor(IDBKeyRange.only(parentId));
+
+          req.onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor) {
+              out.push(cursor.value);
+              cursor.continue();
+            } else {
+              resolve(out);
+            }
+          };
+
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      async function updateAncestorsAfterAdd(child) {
+        let parentId = child.parentId;
+        let childRef = child;
+        let isFirst = true;
+
+        while (parentId) {
+          const parent = await get(parentId);
+          if (!parent) break;
+
+          if (isFirst) {
+            parent.childCount = (parent.childCount || 0) + 1;
+            isFirst = false;
+          }
+
+          parent.descendantCount = (parent.descendantCount || 0) + 1;
+
+          const candidateDepth = (childRef.maxDepth || 0) + 1;
+          if (candidateDepth > (parent.maxDepth || 0)) {
+            parent.maxDepth = candidateDepth;
+          }
+
+          parent.updatedAt = Date.now();
+          await put(parent);
+
+          childRef = parent;
+          parentId = parent.parentId;
+        }
+      }
+
+      async function addChild(rawTerm) {
+        const term = normalizeTerm(rawTerm);
+        if (!term) return;
+
+        const now = Date.now();
+
+        const node = {
+          id: uid(),
+          term,
+          termLower: term.toLowerCase(),
+          parentId: state.currentId,
+          childCount: 0,
+          descendantCount: 0,
+          maxDepth: 0,
+          createdAt: now,
+          updatedAt: now
+        };
+
+        await put(node);
+        await updateAncestorsAfterAdd(node);
+      }
+
+      async function renameNode(id, rawTerm) {
+        const term = normalizeTerm(rawTerm);
+        if (!id || !term) return;
+
+        const node = await get(id);
+        if (!node) return;
+
+        node.term = term;
+        node.termLower = term.toLowerCase();
+        node.updatedAt = Date.now();
+
+        await put(node);
+      }
+
+      async function computeMaxDepth(id) {
+        const children = await getChildren(id);
+        if (!children.length) return 0;
+
+        let max = 0;
+        for (const child of children) {
+          max = Math.max(max, child.maxDepth || 0);
+        }
+
+        return max + 1;
+      }
+
+      async function collectSubtreeIds(rootId) {
+        const ids = [rootId];
+        const queue = [rootId];
+
+        while (queue.length) {
+          const parentId = queue.shift();
+          const children = await getChildren(parentId);
+
+          for (const child of children) {
+            ids.push(child.id);
+            queue.push(child.id);
+          }
+        }
+
+        return ids;
+      }
+
+      async function deleteNode(id) {
+        const node = await get(id);
+        if (!node) return null;
+
+        const ids = await collectSubtreeIds(id);
+        const subtreeSize = ids.length;
+
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE, "readwrite");
+          const store = tx.objectStore(STORE);
+
+          for (const deleteId of ids) {
+            store.delete(deleteId);
+          }
+
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+          tx.onabort = () => reject(tx.error);
+        });
+
+        let parentId = node.parentId;
+        let isFirst = true;
+
+        while (parentId) {
+          const parent = await get(parentId);
+          if (!parent) break;
+
+          if (isFirst) {
+            parent.childCount = Math.max(0, (parent.childCount || 0) - 1);
+            isFirst = false;
+          }
+
+          parent.descendantCount = Math.max(0, (parent.descendantCount || 0) - subtreeSize);
+          parent.maxDepth = await computeMaxDepth(parent.id);
+          parent.updatedAt = Date.now();
+
+          await put(parent);
+
+          parentId = parent.parentId;
+        }
+
+        return node;
+      }
+
+      async function getPathTerms(id) {
+        const terms = [];
+        let current = id;
+
+        while (current) {
+          const node = await get(current);
+          if (!node) break;
+
+          terms.unshift(node.term);
+          current = node.parentId;
+        }
+
+        return terms;
+      }
+
+      function formatPath(terms) {
+        if (!terms.length) return "";
+        if (terms.length <= 2) return terms.join(" › ");
+        return terms[0] + " › … › " + terms.slice(-2).join(" › ");
+      }
+
+      function compareNodes(a, b) {
+        const ma = mass(a);
+        const mb = mass(b);
+
+        if (mb !== ma) return mb - ma;
+
+        return a.term.localeCompare(b.term, undefined, { sensitivity: "base" });
+      }
+
+      function createWordButton(node) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "word " + sizeClass(mass(node));
+        btn.textContent = node.term;
+        btn.dataset.id = node.id;
+        attachLongPress(btn, node.id);
+        return btn;
+      }
+
+      function renderList(children, insideNode) {
+        list.innerHTML = "";
+
+        if (!children.length) {
+          const msg = document.createElement("div");
+          msg.className = "emptyMsg";
+          msg.textContent = insideNode
+            ? "No words inside yet."
+            : "Plant the first word.";
+          list.appendChild(msg);
+          return;
+        }
+
+        children.sort(compareNodes);
+
+for (const node of children) {
+          list.appendChild(createWordButton(node));
+        }
+      }
+
+      async function render() {
+        const token = ++renderToken;
+        const id = state.currentId;
+
+        backBtn.style.visibility = id ? "visible" : "hidden";
+
+        if (id) {
+          const node = await get(id);
+          if (token !== renderToken) return;
+
+          if (!node) {
+            replaceTo("");
+            return;
+          }
+
+          screenTitle.textContent = node.term;
+
+          const pathTerms = await getPathTerms(node.parentId);
+          if (token !== renderToken) return;
+
+          screenPath.textContent = formatPath(pathTerms);
+
+          const children = await getChildren(id);
+          if (token !== renderToken) return;
+
+          renderList(children, true);
+        } else {
+          screenTitle.textContent = "Word Cosmos";
+          screenPath.textContent = "";
+
+          const children = await getChildren("");
+          if (token !== renderToken) return;
+
+          renderList(children, false);
+        }
+      }
+
+      function urlForId(id) {
+        return "#/" + encodeURIComponent(id || "");
+      }
+
+      function idFromHash() {
+        const hash = location.hash;
+
+        if (!hash || hash === "#" || hash === "#/") {
+          return "";
+        }
+
+        const raw = hash.startsWith("#/") ? hash.slice(2) : hash.slice(1);
+
+        try {
+          return decodeURIComponent(raw);
+        } catch {
+          return "";
+        }
+      }
+
+      function pushTo(id) {
+        if (id === state.currentId) return;
+
+        const depth = currentDepth + 1;
+        history.pushState({ id, depth }, "", urlForId(id));
+        currentDepth = depth;
+        state.currentId = id;
+        render();
+      }
+
+      function replaceTo(id) {
+        history.replaceState({ id, depth: currentDepth }, "", urlForId(id));
+        state.currentId = id;
+        render();
+      }
+
+      function openAction(id) {
+        pendingActionId = id;
+        actionDialog.showModal();
+      }
+
+      function attachLongPress(nodeEl, id) {
+        let startX = 0;
+        let startY = 0;
+
+        nodeEl.addEventListener("pointerdown", (event) => {
+          if (event.pointerType === "mouse" && event.button !== 0) return;
+
+          startX = event.clientX;
+          startY = event.clientY;
+          suppressClick = false;
+
+          clearTimeout(longPressTimer);
+          longPressTimer = setTimeout(() => {
+            suppressClick = true;
+            openAction(id);
+          }, 450);
+        });
+
+        nodeEl.addEventListener("pointermove", (event) => {
+          const dx = Math.abs(event.clientX - startX);
+          const dy = Math.abs(event.clientY - startY);
+
+          if (dx > 10 || dy > 10) {
+            clearTimeout(longPressTimer);
+          }
+        });
+
+        const cancelLongPress = () => clearTimeout(longPressTimer);
+
+        nodeEl.addEventListener("pointerup", cancelLongPress);
+        nodeEl.addEventListener("pointercancel", cancelLongPress);
+        nodeEl.addEventListener("lostpointercapture", cancelLongPress);
+
+        nodeEl.addEventListener("click", (event) => {
+          if (suppressClick) {
+            suppressClick = false;
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
+
+          pushTo(id);
+        });
+
+        nodeEl.addEventListener("contextmenu", (event) => {
+          event.preventDefault();
+          openAction(id);
+        });
+      }
+
+      function compareResults(a, b) {
+        if (b.m !== a.m) return b.m - a.m;
+        return a.node.term.localeCompare(b.node.term, undefined, { sensitivity: "base" });
+      }
+
+      function searchNodes(query) {
+        return new Promise((resolve) => {
+          if (!db || !query) {
+            resolve([]);
+            return;
+          }
+
+          const results = [];
+          const tx = db.transaction(STORE, "readonly");
+          const req = tx.objectStore(STORE).openCursor();
+
+          req.onsuccess = (event) => {
+            const cursor = event.target.result;
+
+            if (!cursor) {
+              resolve(results);
+              return;
+            }
+
+            const node = cursor.value;
+
+            if (node.termLower && node.termLower.includes(query)) {
+              const m = mass(node);
+
+              if (results.length < 50) {
+                results.push({ node, m });
+                results.sort(compareResults);
+              } else {
+                const last = results[results.length - 1];
+
+                if (
+                  m > last.m ||
+                  (m === last.m && node.termLower < last.node.termLower)
+                ) {
+                  results[results.length - 1] = { node, m };
+                  results.sort(compareResults);
+                }
+              }
+            }
+
+            cursor.continue();
+          };
+
+          req.onerror = () => resolve(results);
+        });
+      }
+
+      async function runSearch() {
+        const query = searchInput.value.trim().toLowerCase();
+
+        searchResults.innerHTML = "";
+
+        if (!query) {
+          searchEmpty.classList.add("hidden");
+          return;
+        }
+
+        const matches = await searchNodes(query);
+
+        if (!matches.length) {
+          searchEmpty.classList.remove("hidden");
+          return;
+        }
+
+        searchEmpty.classList.add("hidden");
+
+        for (const item of matches) {
+          const pathTerms = await getPathTerms(item.node.parentId);
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "result";
+
+          const word = document.createElement("span");
+          word.className = "word " + sizeClass(item.m);
+          word.textContent = item.node.term;
+
+          const path = document.createElement("span");
+          path.className = "resultPath";
+          path.textContent = formatPath(pathTerms);
+
+          btn.append(word, path);
+
+          btn.addEventListener("click", () => {
+            closeSearch();
+            pushTo(item.node.id);
+          });
+
+          searchResults.appendChild(btn);
+        }
+      }
+
+      function openSearch() {
+        searchOverlay.classList.remove("hidden");
+        searchInput.value = "";
+        searchResults.innerHTML = "";
+        searchEmpty.classList.add("hidden");
+
+        setTimeout(() => searchInput.focus(), 50);
+      }
+
+      function closeSearch() {
+        searchOverlay.classList.add("hidden");
+        searchInput.blur();
+      }
+
+      function bindEvents() {
+        backBtn.addEventListener("click", async () => {
+          if (!searchOverlay.classList.contains("hidden")) {
+            closeSearch();
+            return;
+          }
+
+          if (!state.currentId) return;
+
+          if (currentDepth > 0) {
+            history.back();
+            return;
+          }
+
+          const node = await get(state.currentId);
+          replaceTo(node ? node.parentId : "");
+        });
+
+        searchBtn.addEventListener("click", openSearch);
+        closeSearchBtn.addEventListener("click", closeSearch);
+
+        searchInput.addEventListener("input", () => {
+          clearTimeout(searchTimer);
+          searchTimer = setTimeout(runSearch, 180);
+        });
+
+        addBtn.addEventListener("click", () => {
+          addInput.value = "";
+          addDialog.showModal();
+          setTimeout(() => addInput.focus(), 50);
+        });
+
+        addCancel.addEventListener("click", () => addDialog.close());
+
+        addForm.addEventListener("submit", async (event) => {
+          event.preventDefault();
+
+          const term = normalizeTerm(addInput.value);
+          if (!term) return;
+
+          await addChild(term);
+          addDialog.close();
+          addInput.value = "";
+          await render();
+        });
+
+        renameCancel.addEventListener("click", () => renameDialog.close());
+
+        renameForm.addEventListener("submit", async (event) => {
+          event.preventDefault();
+
+          const term = normalizeTerm(renameInput.value);
+          if (!term || !pendingActionId) return;
+
+          await renameNode(pendingActionId, term);
+          renameDialog.close();
+          await render();
+        });
+
+        deleteCancel.addEventListener("click", () => deleteDialog.close());
+
+        deleteConfirm.addEventListener("click", async () => {
+          deleteDialog.close();
+
+          if (!pendingActionId) return;
+
+          await deleteNode(pendingActionId);
+
+          const current = await get(state.currentId);
+
+          if (!current) {
+            replaceTo(pendingDeleteParentId || "");
+          } else {
+            await render();
+          }
+        });
+
+        actionCancel.addEventListener("click", () => actionDialog.close());
+
+        actionRename.addEventListener("click", async () => {
+          actionDialog.close();
+
+          const node = await get(pendingActionId);
+          if (!node) return;
+
+          renameInput.value = node.term;
+          renameDialog.showModal();
+
+          setTimeout(() => {
+            renameInput.focus();
+            renameInput.select();
+          }, 50);
+        });
+
+        actionDelete.addEventListener("click", async () => {
+          actionDialog.close();
+
+          const node = await get(pendingActionId);
+          if (!node) return;
+
+          pendingDeleteParentId = node.parentId || "";
+          deleteDialog.showModal();
+        });
+
+        window.addEventListener("popstate", (event) => {
+          const nextId = event.state?.id ?? idFromHash();
+          currentDepth = event.state?.depth ?? 0;
+          state.currentId = nextId;
+          render();
+        });
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && !searchOverlay.classList.contains("hidden")) {
+            closeSearch();
+          }
+        });
+      }
+
+      async function init() {
+        try {
+          db = await openDB();
+        } catch (error) {
+          console.error(error);
+          document.body.innerHTML =
+            '<p style="padding:2rem;font-family:sans-serif;color:#e8eaf0;">This app needs local browser storage.</p>';
+          return;
+        }
+
+        const initialId = idFromHash();
+        currentDepth = 0;
+        state.currentId = initialId;
+
+        history.replaceState({ id: initialId, depth: 0 }, "", urlForId(initialId));
+
+        bindEvents();
+        await render();
+
+        if (navigator.storage && navigator.storage.persist) {
+          navigator.storage.persist().catch(() => {});
+        }
+
+        if ("serviceWorker" in navigator) {
+          window.addEventListener("load", () => {
+            navigator.serviceWorker.register("./sw.js").catch(() => {});
+          });
+        }
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
