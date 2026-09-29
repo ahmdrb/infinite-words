@@ -333,6 +333,9 @@
       background: none;
       text-align: left;
       cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
     }
 
     .result .word {
@@ -915,6 +918,7 @@
       async function moveNode(id, newParentId) {
         const node = await get(id);
         if (!node) return;
+        if (id === newParentId) return;
 
         const oldParentId = node.parentId || "";
         if (oldParentId === newParentId) {
@@ -1115,7 +1119,7 @@
         actionDialog.showModal();
       }
 
-      function attachLongPress(nodeEl, id) {
+      function attachLongPress(nodeEl, id, onClick) {
         let startX = 0;
         let startY = 0;
 
@@ -1156,7 +1160,8 @@
             return;
           }
 
-          pushTo(id);
+          if (onClick) onClick(event);
+          else pushTo(id);
         });
 
         nodeEl.addEventListener("contextmenu", (event) => {
@@ -1292,7 +1297,7 @@
 
           btn.append(word, path);
 
-          btn.addEventListener("click", () => {
+          attachLongPress(btn, item.node.id, () => {
             closeSearch();
             pushTo(item.node.id);
           });
@@ -1314,11 +1319,15 @@
         searchOverlay.classList.add("hidden");
         searchInput.blur();
       }
+      function searchIsOpen() {
+        return !searchOverlay.classList.contains("hidden");
+      }
 
       async function openMovePicker(sourceId) {
         moveSourceId = sourceId;
         moveExcludedSet = await collectSubtreeIdSet(sourceId);
-        movePickerId = state.currentId;
+        const srcNode = await get(sourceId);
+        movePickerId = srcNode ? (srcNode.parentId || "") : "";
         moveSearchInput.value = "";
         await renderMove();
         moveOverlay.classList.remove("hidden");
@@ -1469,6 +1478,7 @@
           await renameNode(pendingActionId, term);
           renameDialog.close();
           await render();
+          if (searchIsOpen()) await runSearch();
         });
 
         deleteCancel.addEventListener("click", () => deleteDialog.close());
@@ -1487,6 +1497,8 @@
           } else {
             await render();
           }
+
+          if (searchIsOpen()) await runSearch();
         });
 
         actionCancel.addEventListener("click", () => actionDialog.close());
@@ -1548,8 +1560,15 @@
 
           const source = moveSourceId;
           const target = movePickerId;
+
+          if (moveExcludedSet && moveExcludedSet.has(target)) {
+            closeMove();
+            return;
+          }
+
           closeMove();
           await moveNode(source, target);
+          closeSearch();
           pushTo(target);
         });
 
