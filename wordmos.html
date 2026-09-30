@@ -206,7 +206,9 @@
 
     .selbar .selghost { background: rgba(255, 255, 255, 0.08); color: var(--text); }
     .selbar .selprimary { background: var(--accent); color: #07080c; font-weight: 650; }
-    .selbar .selprimary:disabled {
+    .selbar .seldanger { background: var(--danger); color: #111111; font-weight: 650; }
+    .selbar .selprimary:disabled,
+    .selbar .seldanger:disabled {
       background: rgba(138, 180, 248, 0.28);
       color: rgba(232, 234, 240, 0.55);
       cursor: default;
@@ -388,6 +390,7 @@
       <span id="selCount" class="selcount"></span>
       <button type="button" id="selClearBtn" class="selghost">Clear</button>
       <button type="button" id="selMoveBtn" class="selprimary" disabled>Move</button>
+      <button type="button" id="selDeleteBtn" class="seldanger" disabled>Delete</button>
     </div>
   </div>
 
@@ -461,7 +464,7 @@
 
   <dialog id="deleteDialog">
     <h2>Delete?</h2>
-    <p>Delete this word and everything inside it?</p>
+    <p id="deleteMsg">Delete this word and everything inside it?</p>
     <menu>
       <button type="button" id="deleteCancel">Cancel</button>
       <button type="button" id="deleteConfirm" class="danger">Delete</button>
@@ -514,6 +517,8 @@
       const selCount = el("selCount");
       const selMoveBtn = el("selMoveBtn");
       const selClearBtn = el("selClearBtn");
+      const selDeleteBtn = el("selDeleteBtn");
+      const deleteMsg = el("deleteMsg");
 
       const addDialog = el("addDialog");
       const addForm = el("addForm");
@@ -551,6 +556,7 @@
       let movePickerId = "";
       let moveExcludedSet = null;
       let moveBatch = false;
+      let deleteBatch = false;
 
       let selectMode = false;
       let selectedIds = new Set();
@@ -987,6 +993,7 @@
 
       function openAction(id) {
         pendingActionId = id;
+        actionSelect.style.display = selectMode ? "none" : "";
         actionDialog.showModal();
       }
 
@@ -1070,9 +1077,10 @@
         if (!selectMode || !moveOverlay.classList.contains("hidden")) { selBar.classList.add("hidden"); return; }
         selBar.classList.remove("hidden");
         const n = selectedIds.size;
-        selCount.textContent = n === 1 ? "1 word selected" : n + " words selected";
+        selCount.textContent = n === 0 ? "Tap words to select" : (n === 1 ? "1 word selected" : n + " words selected");
         selMoveBtn.disabled = n === 0;
-        selMoveBtn.textContent = n <= 1 ? "Move" : "Move " + n + " words";
+        selMoveBtn.textContent = "Move";
+        selDeleteBtn.disabled = n === 0;
       }
 
       function enterSelectMode(id) {
@@ -1237,6 +1245,25 @@
 
         deleteConfirm.addEventListener("click", async () => {
           deleteDialog.close();
+
+          if (deleteBatch) {
+            deleteBatch = false;
+            const ids = Array.from(selectedIds);
+            for (const id of ids) await deleteNode(id);
+            const cur = await get(state.currentId);
+            if (!cur) {
+              state.currentId = "";
+              currentDepth = 0;
+              history.replaceState({ id: "", depth: 0 }, "", urlForId(""));
+            }
+            selectMode = false;
+            selectedIds = new Set();
+            updateSelBar();
+            if (searchIsOpen()) await runSearch();
+            else await render();
+            return;
+          }
+
           if (!pendingActionId) return;
           const doomed = pendingActionId;
           await deleteNode(doomed);
@@ -1277,11 +1304,23 @@
           actionDialog.close();
           const node = await get(pendingActionId);
           if (!node) return;
+          deleteBatch = false;
           pendingDeleteParentId = node.parentId || "";
+          deleteMsg.textContent = "Delete this word and everything inside it?";
           deleteDialog.showModal();
         });
 
         selClearBtn.addEventListener("click", () => exitSelectMode());
+
+        selDeleteBtn.addEventListener("click", () => {
+          if (selectedIds.size === 0) return;
+          deleteBatch = true;
+          const n = selectedIds.size;
+          deleteMsg.textContent = n === 1
+            ? "Delete this word and everything inside it?"
+            : "Delete " + n + " words and everything inside them?";
+          deleteDialog.showModal();
+        });
 
         selMoveBtn.addEventListener("click", async () => {
           if (selectedIds.size === 0) return;
