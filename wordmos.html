@@ -96,6 +96,8 @@
     input[type="text"]:focus, input[type="search"]:focus { border-color: var(--accent); }
     textarea { width: 100%; padding: 0.75rem 0.9rem; border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; background: #0d1017; color: var(--text); font: inherit; font-family: inherit; outline: none; resize: vertical; min-height: 5.2rem; line-height: 1.5; }
     textarea:focus { border-color: var(--accent); }
+    .importstatus { min-height: 1.1rem; margin-top: 0.5rem; font-size: 0.82rem; color: var(--muted); text-align: center; }
+    .importstatus.err { color: var(--danger); }
     .result { display: block; width: 100%; padding: 0.55rem 0; border: 0; background: none; text-align: left; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
     .result .word { display: inline-block; width: auto; padding: 0; }
     .resultPath { display: block; margin-top: 0.15rem; color: var(--muted); font-size: 0.76rem; overflow-wrap: anywhere; }
@@ -130,6 +132,9 @@
         <h1 id="screenTitle">Cosmos</h1>
         <div id="screenPath" class="path"></div>
       </div>
+      <button id="importBtn" class="iconbtn" aria-label="Import a tree">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v10" /><path d="M8 9l4 4 4-4" /><path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" /></svg>
+      </button>
       <button id="atlasBtn" class="iconbtn" aria-label="Atlas">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="7" r="1.6" /><circle cx="17" cy="6" r="2.4" /><circle cx="12" cy="14" r="1.4" /><circle cx="18" cy="17" r="1.8" /><circle cx="7" cy="17" r="1.2" /></svg>
       </button>
@@ -191,6 +196,22 @@
       <div class="iconbtn spacer" aria-hidden="true"></div>
     </header>
     <main id="atlasResults" class="list cloudList"></main>
+  </div>
+
+  <div id="importOverlay" class="overlay hidden" role="dialog" aria-label="Import a tree">
+    <header class="topbar">
+      <button id="importCloseBtn" class="iconbtn" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" /></svg></button>
+      <div class="titles"><h1>Import a tree</h1><div class="path">first line = the word · ├ └ = nesting</div></div>
+      <div class="iconbtn spacer" aria-hidden="true"></div>
+    </header>
+    <div style="padding:0.6rem 1rem 0;">
+      <textarea id="importInput" rows="12" placeholder="SPARE PART&#10;├── 1. GENERAL MEANING&#10;│   ├── Replacement component&#10;│   └── Kept in reserve&#10;└── 2. PURPOSE&#10;    └── Repair" autocomplete="off" spellcheck="false"></textarea>
+      <div id="importStatus" class="importstatus"></div>
+    </div>
+    <div class="movebar">
+      <button type="button" id="importCancelBtn" class="ghostbtn">Cancel</button>
+      <button type="button" id="importBuildBtn" class="primarybtn">Build portrait</button>
+    </div>
   </div>
 
   <dialog id="addDialog">
@@ -284,6 +305,14 @@
       const atlasCloseBtn = el("atlasCloseBtn");
       const atlasResults = el("atlasResults");
 
+      const importBtn = el("importBtn");
+      const importOverlay = el("importOverlay");
+      const importCloseBtn = el("importCloseBtn");
+      const importCancelBtn = el("importCancelBtn");
+      const importBuildBtn = el("importBuildBtn");
+      const importInput = el("importInput");
+      const importStatus = el("importStatus");
+
       const selBar = el("selBar");
       const selCount = el("selCount");
       const selMoveBtn = el("selMoveBtn");
@@ -346,6 +375,7 @@
       let searchTimer = null;
       let moveTimer = null;
       let linkTimer = null;
+      let importing = false;
       function uid() {
         if (window.crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
         return "w-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
@@ -960,6 +990,98 @@
           atlasResults.appendChild(b);
         }
           }
+      function stripConnector(line, ci) {
+        return line.slice(ci).replace(/^[├└╭+|][─╴\-]+\s*/, "").trim();
+      }
+      function stripLeadNum(s) {
+        const t = String(s || "");
+        const stripped = t.replace(/^\s*\d+[.)]\s+/, "").trim();
+        return stripped || t.trim();
+      }
+      function parseTree(raw) {
+        const lines = String(raw || "").split(/\r?\n/);
+        const stack = [];
+        let root = null;
+        let count = 0;
+        const CAP = 2000;
+        for (const line of lines) {
+          const ci = line.search(/[├└╰╭+|][─╴\-]+/);
+          let col, text;
+          if (ci >= 0) {
+            col = ci;
+            text = stripConnector(line, ci);
+          } else {
+            const bare = line.replace(/[│┃╏┆|─╴\-\s]/g, "");
+            if (!bare) continue;
+            if (!root) { col = -1; text = bare; }
+            else { col = (stack.length ? stack[stack.length - 1].col : -1) + 1; text = bare; }
+          }
+          if (!text) continue;
+          if (++count > CAP) return { error: "That tree is too large to import at once." };
+          const node = { text, children: [] };
+          if (!root) { root = node; stack.push({ col: -1, node }); continue; }
+          while (stack.length && stack[stack.length - 1].col >= col) stack.pop();
+          const parent = stack.length ? stack[stack.length - 1].node : root;
+          parent.children.push(node);
+          stack.push({ col, node });
+        }
+        return root ? { root } : { error: "Couldn't read a tree from that." };
+      }
+      async function buildChildren(parentId, kids, depth) {
+        for (const k of kids) {
+          const text = depth <= 1 ? stripLeadNum(k.text) : k.text;
+          const id = await addChild(parentId, text);
+          if (!id) continue;
+          if (depth === 1) { const nn = await get(id); if (nn) { nn.collapsed = true; await put(nn); } }
+          if (k.children && k.children.length) await buildChildren(id, k.children, depth + 1);
+        }
+      }
+      async function buildFromTree(node) {
+        const rootId = await addChild("", stripLeadNum(node.text));
+        if (rootId && node.children && node.children.length) await buildChildren(rootId, node.children, 1);
+        return rootId;
+      }
+      function setImportStatus(msg, err) {
+        importStatus.textContent = msg || "";
+        importStatus.className = "importstatus" + (err ? " err" : "");
+      }
+      function openImport() {
+        importOverlay.classList.remove("hidden");
+        importInput.value = "";
+        setImportStatus("");
+        setTimeout(() => importInput.focus(), 50);
+      }
+      function closeImport() {
+        if (importing) return;
+        importOverlay.classList.add("hidden");
+        importInput.blur();
+      }
+      async function runImport() {
+        if (importing) return;
+        const parsed = parseTree(importInput.value);
+        if (parsed.error) { setImportStatus(parsed.error, true); return; }
+        importing = true;
+        importBuildBtn.disabled = true;
+        importBuildBtn.textContent = "Building…";
+        setImportStatus("");
+        try {
+          const rootId = await buildFromTree(parsed.root);
+          if (!rootId) { setImportStatus("Couldn't build that portrait.", true); }
+          else {
+            importOverlay.classList.add("hidden");
+            importInput.value = "";
+            pushTo(rootId, true);
+          }
+        } catch (err) {
+          console.error(err);
+          setImportStatus("Something went wrong building that tree.", true);
+        } finally {
+          importing = false;
+          importBuildBtn.disabled = false;
+          importBuildBtn.textContent = "Build portrait";
+        }
+      }
+
       function bindEvents() {
         backBtn.addEventListener("click", async () => {
           if (selectMode) { exitSelectMode(); return; }
@@ -967,6 +1089,7 @@
           if (!linkOverlay.classList.contains("hidden")) { closeLink(); return; }
           if (!moveOverlay.classList.contains("hidden")) { closeMove(); return; }
           if (!atlasOverlay.classList.contains("hidden")) { closeAtlas(); return; }
+          if (!importOverlay.classList.contains("hidden")) { closeImport(); return; }
           if (!state.currentId) return;
           if (currentDepth > 0) { history.back(); return; }
           pushTo("");
@@ -974,6 +1097,11 @@
         homeBtn.addEventListener("click", () => pushTo(""));
         atlasBtn.addEventListener("click", openAtlas);
         atlasCloseBtn.addEventListener("click", closeAtlas);
+
+        importBtn.addEventListener("click", openImport);
+        importCloseBtn.addEventListener("click", closeImport);
+        importCancelBtn.addEventListener("click", closeImport);
+        importBuildBtn.addEventListener("click", runImport);
         searchBtn.addEventListener("click", openSearch);
         closeSearchBtn.addEventListener("click", closeSearch);
         searchInput.addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(runSearch, 180); });
@@ -1114,6 +1242,7 @@
             else if (!linkOverlay.classList.contains("hidden")) closeLink();
             else if (!moveOverlay.classList.contains("hidden")) closeMove();
             else if (!atlasOverlay.classList.contains("hidden")) closeAtlas();
+            else if (!importOverlay.classList.contains("hidden")) closeImport();
           }
         });
       }
