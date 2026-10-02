@@ -155,6 +155,13 @@
       opacity: 1 !important;
     }
 
+    .word.cite {
+      font-size: var(--fs2);
+      font-style: italic;
+      opacity: 0.6;
+      font-weight: 480;
+    }
+
     .s1 { font-size: var(--fs1); opacity: 0.72; font-weight: 480; }
     .s2 { font-size: var(--fs2); opacity: 0.80; }
     .s3 { font-size: var(--fs3); opacity: 0.88; }
@@ -309,6 +316,21 @@
       overflow-wrap: anywhere;
     }
 
+    .citeEntryBtn {
+      width: 100%;
+      margin-top: 0.55rem;
+      border: 0;
+      background: none;
+      color: var(--muted);
+      font: inherit;
+      font-size: 0.9rem;
+      text-align: center;
+      cursor: pointer;
+      padding: 0.45rem;
+    }
+
+    .citeEntryBtn:active { opacity: 0.7; }
+
     dialog {
       width: min(92vw, 360px);
       padding: 1rem;
@@ -440,6 +462,24 @@
     </div>
   </div>
 
+  <div id="citeOverlay" class="overlay hidden" role="dialog" aria-label="Cite a word">
+    <header class="topbar">
+      <button id="citeCloseBtn" class="iconbtn" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18 6L6 18M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div class="searchwrap">
+        <input id="citeInput" type="search" placeholder="Cite a word…" autocomplete="off" spellcheck="false" />
+      </div>
+
+      <div class="iconbtn spacer" aria-hidden="true"></div>
+    </header>
+
+    <main id="citeResults" class="list searchList"></main>
+  </div>
+
   <dialog id="addDialog">
     <form id="addForm">
       <h2>New word</h2>
@@ -448,6 +488,7 @@
         <button type="button" id="addCancel">Cancel</button>
         <button type="submit" class="primary">Add</button>
       </menu>
+      <button type="button" id="citeFromAdd" class="citeEntryBtn">…or cite an existing word</button>
     </form>
   </dialog>
 
@@ -513,12 +554,17 @@
       const moveCancelBtn = el("moveCancelBtn");
       const moveSearchInput = el("moveSearchInput");
 
+      const citeOverlay = el("citeOverlay");
+      const citeCloseBtn = el("citeCloseBtn");
+      const citeInput = el("citeInput");
+      const citeResults = el("citeResults");
+      const citeFromAdd = el("citeFromAdd");
+
       const selBar = el("selBar");
       const selCount = el("selCount");
       const selMoveBtn = el("selMoveBtn");
-      const selClearBtn = el("selClearBtn");
       const selDeleteBtn = el("selDeleteBtn");
-      const deleteMsg = el("deleteMsg");
+      const selClearBtn = el("selClearBtn");
 
       const addDialog = el("addDialog");
       const addForm = el("addForm");
@@ -531,6 +577,7 @@
       const renameCancel = el("renameCancel");
 
       const deleteDialog = el("deleteDialog");
+      const deleteMsg = el("deleteMsg");
       const deleteCancel = el("deleteCancel");
       const deleteConfirm = el("deleteConfirm");
 
@@ -556,6 +603,7 @@
       let movePickerId = "";
       let moveExcludedSet = null;
       let moveBatch = false;
+
       let deleteBatch = false;
 
       let selectMode = false;
@@ -565,6 +613,7 @@
       let suppressClick = false;
       let searchTimer = null;
       let moveSearchTimer = null;
+      let citeTimer = null;
       function uid() {
         if (window.crypto && typeof crypto.randomUUID === "function") {
           return crypto.randomUUID();
@@ -697,6 +746,30 @@
           term,
           termLower: term.toLowerCase(),
           parentId: state.currentId,
+          kind: "node",
+          targetId: "",
+          childCount: 0,
+          descendantCount: 0,
+          maxDepth: 0,
+          createdAt: now,
+          updatedAt: now
+        };
+        await put(node);
+        await updateAncestorsAfterAdd(node);
+      }
+
+      async function addCite(targetId) {
+        if (!targetId || targetId === state.currentId) return;
+        const t = await get(targetId);
+        if (!t || t.kind === "ref") return;
+        const now = Date.now();
+        const node = {
+          id: uid(),
+          term: "",
+          termLower: "",
+          parentId: state.currentId,
+          kind: "ref",
+          targetId,
           childCount: 0,
           descendantCount: 0,
           maxDepth: 0,
@@ -763,30 +836,66 @@
       async function deleteNode(id) {
         const node = await get(id);
         if (!node) return null;
-        const ids = await collectSubtreeIds(id);
-        const subtreeSize = ids.length;
+
+        const coreIds = await collectSubtreeIds(id);
+        const coreSet = new Set(coreIds);
+        const coreSize = coreIds.length;
+
+        const dangling = await new Promise((resolve, reject) => {
+          const out = [];
+          const tx = db.transaction(STORE, "readonly");
+          const req = tx.objectStore(STORE).openCursor();
+          req.onsuccess = (e) => {
+            const c = e.target.result;
+            if (!c) { resolve(out); return; }
+            const v = c.value;
+            if (v.kind === "ref" && v.targetId && coreSet.has(v.targetId) && !coreSet.has(v.id)) out.push(v);
+            c.continue();
+          };
+          req.onerror = () => reject(req.error);
+        });
+
+        const allDeleteIds = coreIds.concat(dangling.map((r) => r.id));
+
         await new Promise((resolve, reject) => {
           const tx = db.transaction(STORE, "readwrite");
-          const store = tx.objectStore(STORE);
-          for (const deleteId of ids) store.delete(deleteId);
+          const st = tx.objectStore(STORE);
+          for (const d of allDeleteIds) st.delete(d);
           tx.oncomplete = () => resolve();
           tx.onerror = () => reject(tx.error);
           tx.onabort = () => reject(tx.error);
         });
+
         let parentId = node.parentId;
         let isFirst = true;
         while (parentId) {
-          const parent = await get(parentId);
-          if (!parent) break;
-          if (isFirst) { parent.childCount = Math.max(0, (parent.childCount || 0) - 1); isFirst = false; }
-          parent.descendantCount = Math.max(0, (parent.descendantCount || 0) - subtreeSize);
-          parent.maxDepth = await computeMaxDepth(parent.id);
-          parent.updatedAt = Date.now();
-          await put(parent);
-          parentId = parent.parentId;
+          const p = await get(parentId);
+          if (!p) break;
+          if (isFirst) { p.childCount = Math.max(0, (p.childCount || 0) - 1); isFirst = false; }
+          p.descendantCount = Math.max(0, (p.descendantCount || 0) - coreSize);
+          p.maxDepth = await computeMaxDepth(p.id);
+          p.updatedAt = Date.now();
+          await put(p);
+          parentId = p.parentId;
         }
+
+        for (const r of dangling) {
+          let rp = r.parentId;
+          let first = true;
+          while (rp) {
+            const p = await get(rp);
+            if (!p) break;
+            if (first) { p.childCount = Math.max(0, (p.childCount || 0) - 1); first = false; }
+            p.descendantCount = Math.max(0, (p.descendantCount || 0) - 1);
+            p.maxDepth = await computeMaxDepth(p.id);
+            p.updatedAt = Date.now();
+            await put(p);
+            rp = p.parentId;
+          }
+        }
+
         return node;
-        }
+    }
       async function moveNode(id, newParentId) {
         const node = await get(id);
         if (!node) return;
@@ -871,7 +980,7 @@
             const cursor = event.target.result;
             if (!cursor) { results.sort(compareResults); resolve(results.slice(0, 50)); return; }
             const node = cursor.value;
-            if (node.termLower && node.termLower.includes(query)) {
+            if (node.kind !== "ref" && node.termLower && node.termLower.includes(query)) {
               results.push({ node, m: mass(node), q: query });
             }
             cursor.continue();
@@ -890,7 +999,12 @@
             const cursor = event.target.result;
             if (!cursor) { results.sort(compareResults); resolve(results.slice(0, 50)); return; }
             const node = cursor.value;
-            if (node.termLower && node.termLower.includes(query) && !(excludeSet && excludeSet.has(node.id))) {
+            if (
+              node.kind !== "ref" &&
+              node.termLower &&
+              node.termLower.includes(query) &&
+              !(excludeSet && excludeSet.has(node.id))
+            ) {
               results.push({ node, m: mass(node), q: query });
             }
             cursor.continue();
@@ -898,9 +1012,21 @@
           req.onerror = () => { results.sort(compareResults); resolve(results.slice(0, 50)); };
         });
       }
-      function createWordButton(node) {
+      async function createWordButton(node) {
         const btn = document.createElement("button");
         btn.type = "button";
+        if (node.kind === "ref") {
+          const t = node.targetId ? await get(node.targetId) : null;
+          btn.className = "word cite";
+          btn.textContent = t ? t.term : "(gone)";
+          btn.dataset.id = node.id;
+          const portalId = t ? t.id : "";
+          attachLongPress(btn, node.id, () => {
+            if (selectMode) toggleSelect(node.id, btn);
+            else if (portalId) pushTo(portalId);
+          });
+          return btn;
+        }
         btn.className = "word " + sizeClass(mass(node));
         if (selectMode && selectedIds.has(node.id)) btn.classList.add("sel");
         btn.textContent = node.term;
@@ -924,7 +1050,7 @@
         return btn;
       }
 
-      function renderList(children, insideNode) {
+      async function renderList(children, insideNode) {
         list.innerHTML = "";
         if (!children.length) {
           const msg = document.createElement("div");
@@ -934,7 +1060,7 @@
           return;
         }
         children.sort(compareNodes);
-        for (const node of children) list.appendChild(createWordButton(node));
+        for (const node of children) list.appendChild(await createWordButton(node));
       }
 
       async function render() {
@@ -952,13 +1078,13 @@
           screenPath.textContent = formatPath(pathTerms);
           const children = await getChildren(id);
           if (token !== renderToken) return;
-          renderList(children, true);
+          await renderList(children, true);
         } else {
           screenTitle.textContent = "Word Cosmos";
           screenPath.textContent = "";
           const children = await getChildren("");
           if (token !== renderToken) return;
-          renderList(children, false);
+          await renderList(children, false);
         }
       }
 
@@ -991,8 +1117,10 @@
         render();
       }
 
-      function openAction(id) {
+      async function openAction(id) {
         pendingActionId = id;
+        const n = await get(id);
+        actionRename.style.display = (n && n.kind === "ref") ? "none" : "";
         actionSelect.style.display = selectMode ? "none" : "";
         actionDialog.showModal();
       }
@@ -1023,7 +1151,7 @@
           else pushTo(id);
         });
         nodeEl.addEventListener("contextmenu", (event) => { event.preventDefault(); openAction(id); });
-          }
+      }
       async function runSearch() {
         const myToken = ++searchRunToken;
         const query = searchInput.value.trim().toLowerCase();
@@ -1143,7 +1271,7 @@
         if (id) currentNode = await get(id);
         moveLabel.textContent = currentNode ? currentNode.term : "Cosmos · top level";
         const children = await getChildren(id);
-        const filtered = moveExcludedSet ? children.filter((c) => !moveExcludedSet.has(c.id)) : children;
+        const filtered = children.filter((c) => c.kind !== "ref" && (!moveExcludedSet || !moveExcludedSet.has(c.id)));
         filtered.sort(compareNodes);
         moveList.innerHTML = "";
         if (!filtered.length) {
@@ -1191,6 +1319,58 @@
           moveList.appendChild(btn);
         }
       }
+
+      function openCitePicker() {
+        citeOverlay.classList.remove("hidden");
+        citeInput.value = "";
+        citeResults.innerHTML = "";
+        renderCiteResults();
+        setTimeout(() => citeInput.focus(), 50);
+      }
+
+      function closeCite() {
+        citeOverlay.classList.add("hidden");
+        citeInput.blur();
+      }
+
+      async function renderCiteResults() {
+        const query = citeInput.value.trim().toLowerCase();
+        citeResults.innerHTML = "";
+        if (!query) {
+          const m = document.createElement("div");
+          m.className = "emptyMsg";
+          m.textContent = "Type to find a word to cite.";
+          citeResults.appendChild(m);
+          return;
+        }
+        const matches = await moveSearchNodes(query, new Set([state.currentId]));
+        if (!matches.length) {
+          const m = document.createElement("div");
+          m.className = "emptyMsg";
+          m.textContent = "No words found.";
+          citeResults.appendChild(m);
+          return;
+        }
+        for (const item of matches) {
+          const pathTerms = await getPathTerms(item.node.parentId);
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "result";
+          const word = document.createElement("span");
+          word.className = "word " + sizeClass(item.m);
+          word.textContent = item.node.term;
+          const path = document.createElement("span");
+          path.className = "resultPath";
+          path.textContent = formatPath(pathTerms);
+          btn.append(word, path);
+          btn.addEventListener("click", async () => {
+            await addCite(item.node.id);
+            closeCite();
+            await render();
+          });
+          citeResults.appendChild(btn);
+        }
+      }
       function bindEvents() {
         backBtn.addEventListener("click", async () => {
           if (selectMode) { exitSelectMode(); return; }
@@ -1218,6 +1398,18 @@
         });
 
         addCancel.addEventListener("click", () => addDialog.close());
+
+        citeFromAdd.addEventListener("click", () => {
+          addDialog.close();
+          openCitePicker();
+        });
+
+        citeCloseBtn.addEventListener("click", closeCite);
+
+        citeInput.addEventListener("input", () => {
+          clearTimeout(citeTimer);
+          citeTimer = setTimeout(renderCiteResults, 180);
+        });
 
         addForm.addEventListener("submit", async (event) => {
           event.preventDefault();
@@ -1376,6 +1568,7 @@
             if (selectMode) { exitSelectMode(); return; }
             if (!searchOverlay.classList.contains("hidden")) closeSearch();
             else if (!moveOverlay.classList.contains("hidden")) closeMove();
+            else if (!citeOverlay.classList.contains("hidden")) closeCite();
           }
         });
       }
