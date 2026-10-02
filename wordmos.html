@@ -201,11 +201,11 @@
   <div id="importOverlay" class="overlay hidden" role="dialog" aria-label="Import a tree">
     <header class="topbar">
       <button id="importCloseBtn" class="iconbtn" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" /></svg></button>
-      <div class="titles"><h1>Import a tree</h1><div class="path">first line = the word · ├ └ = nesting</div></div>
+      <div class="titles"><h1>Import a tree</h1><div class="path">first line = the word · indent or ├ └ = nesting · , = list</div></div>
       <div class="iconbtn spacer" aria-hidden="true"></div>
     </header>
     <div style="padding:0.6rem 1rem 0;">
-      <textarea id="importInput" rows="12" placeholder="SPARE PART&#10;├── 1. GENERAL MEANING&#10;│   ├── Replacement component&#10;│   └── Kept in reserve&#10;└── 2. PURPOSE&#10;    └── Repair" autocomplete="off" spellcheck="false"></textarea>
+      <textarea id="importInput" rows="12" placeholder="" autocomplete="off" spellcheck="false"></textarea>
       <div id="importStatus" class="importstatus"></div>
     </div>
     <div class="movebar">
@@ -629,7 +629,15 @@
       }
       function getRecents() { try { const a = JSON.parse(localStorage.getItem(RECENTS_KEY) || "[]"); return Array.isArray(a) ? a : []; } catch { return []; } }
       function setRecents(arr) { try { localStorage.setItem(RECENTS_KEY, JSON.stringify(arr)); } catch {} }
-
+      function pruneRecents(ids) {
+        try {
+          const set = new Set(Array.isArray(ids) ? ids : [ids]);
+          let arr = JSON.parse(localStorage.getItem(RECENTS_KEY) || "[]");
+          if (!Array.isArray(arr)) arr = [];
+          const kept = arr.filter((x) => !set.has(x));
+          if (kept.length !== arr.length) setRecents(kept);
+        } catch {}
+      }
       function indentFor(level) { const l = Math.min(level, 5); return (0.35 + (l - 1) * 0.85).toFixed(2) + "rem"; }
 
       async function buildRows(nodes, level, container) {
@@ -852,7 +860,7 @@
       }
 
       function openSearch() { searchOverlay.classList.remove("hidden"); searchInput.value = ""; searchResults.innerHTML = ""; setTimeout(() => searchInput.focus(), 50); }
-      function closeSearch() { searchOverlay.classList.add("hidden"); searchInput.blur(); }
+      function closeSearch() { searchOverlay.classList.add("hidden"); searchInput.blur(); if (!state.currentId) render(); }
       function searchIsOpen() { return !searchOverlay.classList.contains("hidden"); }
 
       async function runSearch() {
@@ -978,7 +986,7 @@
       }
 
       function openAtlas() { atlasOverlay.classList.remove("hidden"); renderAtlas(); }
-      function closeAtlas() { atlasOverlay.classList.add("hidden"); }
+      function closeAtlas() { atlasOverlay.classList.add("hidden"); if (!state.currentId) render(); }
       async function renderAtlas() {
         const subs = (await getChildren("")).filter((n) => n.kind !== "link");
         subs.sort(compareByMass);
@@ -998,6 +1006,67 @@
         const stripped = t.replace(/^\s*\d+[.)]\s+/, "").trim();
         return stripped || t.trim();
       }
+      function countLead(line) {
+        const m = /^[ \t]*/.exec(line)[0];
+        let n = 0;
+        for (const ch of m) n += ch === "\t" ? 2 : 1;
+        return n;
+      }
+      function stripBulletMarker(s) {
+        return String(s).replace(/^\s*[·•\-\*]\s+/, "").trim();
+      }
+      function splitBulletText(t) {
+        if (/[→:]/.test(t)) return [t];
+        const parts = t.split(",").map((x) => x.trim()).filter(Boolean);
+        return parts.length ? parts : [t];
+      }
+      function parseBullets(raw) {
+        const lines = String(raw || "").split(/\r?\n/);
+        const stack = [];
+        let root = null;
+        let seenRoot = false;
+        let count = 0;
+        const CAP = 2000;
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          if (!seenRoot) {
+            const t = stripBulletMarker(line.replace(/^\s*\d+[.)]\s+/, "")).trim() || line.trim();
+            root = { text: t, children: [] };
+            stack.push({ depth: 0, node: root });
+            seenRoot = true;
+            count++;
+            continue;
+          }
+          if (++count > CAP) return { error: "That tree is too large to import at once." };
+          const lead = countLead(line);
+          const isNumbered = /^\s*\d+[.)]\s+\S/.test(line);
+          const isBullet = /^\s*[·•\-\*]\s+\S/.test(line);
+          let depth, texts;
+          if (isNumbered) {
+            depth = 1;
+            texts = [ line.replace(/^\s*\d+[.)]\s+/, "").trim() ];
+          } else if (isBullet) {
+            depth = 2 + Math.round(lead / 2);
+            texts = splitBulletText(stripBulletMarker(line));
+          } else {
+            depth = 2 + Math.round(lead / 2);
+            texts = [ line.trim() ];
+          }
+          for (const tx of texts) {
+            if (!tx) continue;
+            const node = { text: tx, children: [] };
+            while (stack.length && stack[stack.length - 1].depth >= depth) stack.pop();
+            const parent = stack.length ? stack[stack.length - 1].node : root;
+            parent.children.push(node);
+            stack.push({ depth, node });
+          }
+        }
+        return root ? { root } : { error: "Couldn't read a tree from that." };
+      }
+      function parseAny(raw) {
+        return /[├└╭]/.test(String(raw || "")) ? parseTree(raw) : parseBullets(raw);
+      }
+
       function parseTree(raw) {
         const lines = String(raw || "").split(/\r?\n/);
         const stack = [];
@@ -1058,7 +1127,7 @@
       }
       async function runImport() {
         if (importing) return;
-        const parsed = parseTree(importInput.value);
+        const parsed = parseAny(importInput.value);
         if (parsed.error) { setImportStatus(parsed.error, true); return; }
         importing = true;
         importBuildBtn.disabled = true;
@@ -1138,6 +1207,7 @@
             deleteBatch = false;
             const ids = Array.from(selectedIds);
             for (const id of ids) await deleteNode(id);
+            pruneRecents(ids);
             const cur = await get(state.currentId);
             if (!cur || cur.parentId !== "" || cur.kind === "link") { state.currentId = ""; currentDepth = 0; history.replaceState({ id: "", depth: 0 }, "", urlForId("")); }
             selectMode = false; selectedIds = new Set(); updateSelBar();
@@ -1149,6 +1219,7 @@
           if (!pendingActionId) return;
           const doomed = pendingActionId;
           await deleteNode(doomed);
+          pruneRecents(doomed);
           if (selectMode && selectedIds.has(doomed)) { selectedIds.delete(doomed); updateSelBar(); }
           const cur = await get(state.currentId);
           if (!cur || cur.parentId !== "" || cur.kind === "link") pushTo("");
