@@ -94,6 +94,8 @@
     .searchwrap { flex: 1; min-width: 0; }
     input[type="text"], input[type="search"] { width: 100%; padding: 0.75rem 0.9rem; border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; background: #0d1017; color: var(--text); font: inherit; outline: none; }
     input[type="text"]:focus, input[type="search"]:focus { border-color: var(--accent); }
+    textarea { width: 100%; padding: 0.75rem 0.9rem; border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; background: #0d1017; color: var(--text); font: inherit; font-family: inherit; outline: none; resize: vertical; min-height: 5.2rem; line-height: 1.5; }
+    textarea:focus { border-color: var(--accent); }
     .result { display: block; width: 100%; padding: 0.55rem 0; border: 0; background: none; text-align: left; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
     .result .word { display: inline-block; width: auto; padding: 0; }
     .resultPath { display: block; margin-top: 0.15rem; color: var(--muted); font-size: 0.76rem; overflow-wrap: anywhere; }
@@ -112,6 +114,7 @@
     dialog button.danger { background: var(--danger); color: #111111; font-weight: 650; }
     #actionDialog menu { flex-direction: column; align-items: stretch; }
     #actionDialog button { width: 100%; text-align: left; }
+    .actionHead { text-align: center; font-size: 1.05rem; font-weight: 680; color: var(--text); padding: 0.1rem 0.2rem 0.7rem; overflow-wrap: anywhere; line-height: 1.2; }
   </style>
 </head>
 <body>
@@ -193,7 +196,7 @@
   <dialog id="addDialog">
     <form id="addForm">
       <h2 id="addTitle">New word</h2>
-      <input id="addInput" type="text" placeholder="word" autocomplete="off" spellcheck="false" required />
+      <textarea id="addInput" placeholder="one word per line" autocomplete="off" spellcheck="false" rows="3"></textarea>
       <menu>
         <button type="button" id="addCancel">Cancel</button>
         <button type="submit" class="primary">Add</button>
@@ -223,6 +226,7 @@
   </dialog>
 
   <dialog id="actionDialog">
+    <div id="actionHead" class="actionHead"></div>
     <menu>
       <button type="button" id="mOpen">Open</button>
       <button type="button" id="mAdd">Add child</button>
@@ -314,6 +318,7 @@
       const mDelete = el("mDelete");
       const mSelect = el("mSelect");
       const mCancel = el("mCancel");
+      const actionHead = el("actionHead");
 
       let db = null;
       const state = { currentId: "" };
@@ -795,6 +800,12 @@
       async function openAction(id) {
         pendingActionId = id;
         const n = await get(id);
+        let headName = "";
+        if (n) {
+          if (n.kind === "link") { const t = n.targetId ? await get(n.targetId) : null; headName = t ? t.term : "(gone)"; }
+          else headName = n.term || "";
+        }
+        actionHead.textContent = headName;
         const isRoot = !!n && n.parentId === "" && n.kind !== "link";
         const isLink = !!n && n.kind === "link";
         const show = (b, v) => { b.style.display = v ? "" : "none"; };
@@ -972,8 +983,9 @@
         linkFromAdd.addEventListener("click", () => { addDialog.close(); openLinkPicker(addTargetId); });
         addForm.addEventListener("submit", async (e) => {
           e.preventDefault();
-          const term = normalizeTerm(addInput.value); if (!term) return;
-          await addChild(addTargetId, term);
+          const lines = String(addInput.value || "").split(/\r?\n/).map(normalizeTerm).filter(Boolean);
+          if (!lines.length) return;
+          for (const ln of lines) await addChild(addTargetId, ln);
           addDialog.close(); addInput.value = "";
           await render();
         });
