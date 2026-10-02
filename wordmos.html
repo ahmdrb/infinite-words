@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Word Cosmos</title>
+  <title>Cosmos</title>
   <meta name="theme-color" content="#07080c" />
-  <meta name="description" content="A quiet tree of words that grow by containing other words." />
+  <meta name="description" content="A search-first library of per-concept portraits." />
 
   <link rel="manifest" href="./manifest.json" />
   <link rel="icon" href="./icon.svg" type="image/svg+xml" />
@@ -18,7 +18,6 @@
       --muted: #8b93a7;
       --accent: #8ab4f8;
       --danger: #ff6b6b;
-
       --fs1: clamp(0.95rem, 3.2vw, 1.05rem);
       --fs2: clamp(1.15rem, 4.0vw, 1.35rem);
       --fs3: clamp(1.42rem, 5.4vw, 1.75rem);
@@ -26,346 +25,91 @@
       --fs5: clamp(2.25rem, 9.0vw, 3.00rem);
       --fs6: clamp(2.85rem, 12.0vw, 4.00rem);
     }
-
     * { box-sizing: border-box; }
-
     html, body {
-      margin: 0;
-      padding: 0;
-      min-height: 100%;
-      background: var(--bg);
-      color: var(--text);
+      margin: 0; padding: 0; min-height: 100%;
+      background: var(--bg); color: var(--text);
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      overscroll-behavior-y: contain;
+      -webkit-font-smoothing: antialiased; overscroll-behavior-y: contain;
     }
-
     body { min-height: 100dvh; }
-
     button { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent; }
-
-    #app {
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      padding-top: env(safe-area-inset-top);
-    }
-
+    #app { min-height: 100dvh; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
     .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 5;
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.65rem 0.8rem;
-      background: rgba(7, 8, 12, 0.88);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 0.3rem;
+      padding: 0.6rem 0.7rem; background: rgba(7,8,12,0.9); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
     }
-
-    .titles { flex: 1; min-width: 0; }
-
-    h1 {
-      margin: 0;
-      font-size: 1.05rem;
-      font-weight: 650;
-      line-height: 1.2;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .path {
-      margin-top: 2px;
-      min-height: 1rem;
-      font-size: 0.78rem;
-      color: var(--muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .iconbtn {
-      width: 42px;
-      height: 42px;
-      flex: 0 0 42px;
-      border: 0;
-      border-radius: 14px;
-      background: transparent;
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-    }
-
-    .iconbtn:active { background: rgba(255, 255, 255, 0.06); }
+    .titles { flex: 1; min-width: 0; text-align: center; }
+    h1 { margin: 0; font-size: 1.12rem; font-weight: 680; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; user-select: none; -webkit-user-select: none; }
+    .path { margin-top: 2px; min-height: 0.95rem; font-size: 0.74rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .iconbtn { width: 42px; height: 42px; flex: 0 0 42px; border: 0; border-radius: 14px; background: transparent; display: grid; place-items: center; cursor: pointer; }
+    .iconbtn:active { background: rgba(255,255,255,0.06); }
     .iconbtn.spacer { visibility: hidden; }
-
-    svg {
-      width: 22px;
-      height: 22px;
-      stroke: currentColor;
-      fill: none;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .list {
-      flex: 1;
-      padding: 0.75rem 1rem 1.5rem;
-      overflow-y: auto;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-content: flex-start;
-      gap: 0.1rem 0.85rem;
-      text-align: center;
-    }
-
+    svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .list { flex: 1; padding: 0.75rem 1rem 1.5rem; overflow-y: auto; }
     .mainList { padding-bottom: calc(6rem + env(safe-area-inset-bottom)); }
-    .searchList { display: block; text-align: left; }
-    .moveList { padding-bottom: 1rem; }
-    .movesearchrow { padding: 0.25rem 1rem 0.5rem; }
-
-    .word {
-      display: inline-block;
-      width: auto;
-      margin: 0;
-      padding: 0.22rem 0.4rem;
-      border: 0;
-      background: none;
-      text-align: center;
-      color: var(--text);
-      font-weight: 520;
-      line-height: 1.12;
-      letter-spacing: -0.015em;
-      overflow-wrap: anywhere;
-      user-select: none;
-      cursor: pointer;
-      transition: font-size 180ms ease, opacity 180ms ease;
-    }
-
+    .cloudList { display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; gap: 0.1rem 0.85rem; text-align: center; }
+    .word { display: inline-block; width: auto; margin: 0; padding: 0.22rem 0.4rem; border: 0; background: none; text-align: center; color: var(--text); font-weight: 520; line-height: 1.12; letter-spacing: -0.015em; overflow-wrap: anywhere; user-select: none; cursor: pointer; transition: font-size 180ms ease, opacity 180ms ease; }
     .word:active { opacity: 0.72; }
-
-    .word.sel {
-      outline: 1.5px solid var(--accent);
-      outline-offset: 3px;
-      border-radius: 10px;
-      opacity: 1 !important;
-    }
-
-    .word.cite {
-      font-size: var(--fs2);
-      font-style: italic;
-      opacity: 0.6;
-      font-weight: 480;
-    }
-
+    .word.sel { outline: 1.5px solid var(--accent); outline-offset: 3px; border-radius: 10px; opacity: 1 !important; }
     .s1 { font-size: var(--fs1); opacity: 0.72; font-weight: 480; }
     .s2 { font-size: var(--fs2); opacity: 0.80; }
     .s3 { font-size: var(--fs3); opacity: 0.88; }
     .s4 { font-size: var(--fs4); opacity: 0.95; font-weight: 560; }
     .s5 { font-size: var(--fs5); font-weight: 620; }
     .s6 { font-size: var(--fs6); font-weight: 680; }
-
-    .emptyMsg {
-      width: 100%;
-      padding: 2.5rem 1rem;
-      text-align: center;
-      color: var(--muted);
-      font-size: 1rem;
-    }
-
-    .selbar {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 25;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding: 0.7rem 1rem calc(0.7rem + env(safe-area-inset-bottom));
-      background: rgba(7, 8, 12, 0.94);
-      backdrop-filter: blur(12px);
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .selbar .selcount {
-      flex: 1;
-      min-width: 0;
-      font-size: 0.9rem;
-      color: var(--muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .selbar button {
-      border: 0;
-      border-radius: 14px;
-      padding: 0.7rem 0.95rem;
-      font: inherit;
-      cursor: pointer;
-      flex: 0 0 auto;
-    }
-
-    .selbar .selghost { background: rgba(255, 255, 255, 0.08); color: var(--text); }
+    .row { display: flex; align-items: baseline; gap: 0.4rem; width: 100%; text-align: left; padding: 0.34rem 0.2rem; border: 0; background: none; color: var(--text); cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; min-height: 2.5rem; }
+    .row:active { opacity: 0.7; }
+    .row.sel { outline: 1.5px solid var(--accent); outline-offset: 2px; border-radius: 10px; }
+    .row .tgl { flex: 0 0 1.05rem; text-align: center; color: var(--muted); font-size: 0.82em; }
+    .row .num { flex: 0 0 auto; min-width: 1.7ch; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 0.86em; }
+    .row .txt { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; font-size: 1rem; line-height: 1.28; font-weight: 520; }
+    .row.lvl1 > .txt { font-weight: 640; }
+    .row .txt.link { color: var(--accent); text-decoration: underline; }
+    .emptyMsg { width: 100%; padding: 2.2rem 1rem; text-align: center; color: var(--muted); font-size: 0.98rem; }
+    .homebox { width: 100%; max-width: 32rem; margin: 16vh auto 0; padding: 0 0.5rem; }
+    .searchfake { width: 100%; padding: 0.95rem 1.1rem; border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; background: #0d1017; color: var(--muted); font: inherit; font-size: 1.05rem; text-align: left; cursor: pointer; }
+    .searchfake:active { border-color: var(--accent); }
+    .recents { width: 100%; max-width: 32rem; margin: 1.6rem auto 0; padding: 0 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.05rem; }
+    .rlabel { color: var(--muted); font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 0.35rem; }
+    .rword { background: none; border: 0; color: var(--text); font: inherit; font-size: 1.04rem; padding: 0.34rem 0.6rem; cursor: pointer; border-radius: 10px; }
+    .rword:active { background: rgba(255,255,255,0.06); }
+    .selbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1rem calc(0.7rem + env(safe-area-inset-bottom)); background: rgba(7,8,12,0.94); backdrop-filter: blur(12px); border-top: 1px solid rgba(255,255,255,0.08); }
+    .selbar .selcount { flex: 1; min-width: 0; font-size: 0.88rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .selbar button { border: 0; border-radius: 14px; padding: 0.7rem 0.9rem; font: inherit; cursor: pointer; flex: 0 0 auto; }
+    .selbar .selghost { background: rgba(255,255,255,0.08); color: var(--text); }
     .selbar .selprimary { background: var(--accent); color: #07080c; font-weight: 650; }
     .selbar .seldanger { background: var(--danger); color: #111111; font-weight: 650; }
-    .selbar .selprimary:disabled,
-    .selbar .seldanger:disabled {
-      background: rgba(138, 180, 248, 0.28);
-      color: rgba(232, 234, 240, 0.55);
-      cursor: default;
-    }
-
-    .movebar {
-      display: flex;
-      gap: 0.6rem;
-      padding: 0.7rem 1rem calc(0.7rem + env(safe-area-inset-bottom));
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-      background: rgba(7, 8, 12, 0.92);
-      backdrop-filter: blur(12px);
-    }
-
-    .ghostbtn, .primarybtn {
-      flex: 1;
-      border: 0;
-      border-radius: 14px;
-      padding: 0.8rem;
-      font: inherit;
-      cursor: pointer;
-    }
-
-    .ghostbtn { background: rgba(255, 255, 255, 0.08); color: var(--text); }
+    .selbar .selprimary:disabled, .selbar .seldanger:disabled { background: rgba(138,180,248,0.28); color: rgba(232,234,240,0.55); cursor: default; }
+    .movebar { display: flex; gap: 0.6rem; padding: 0.7rem 1rem calc(0.7rem + env(safe-area-inset-bottom)); border-top: 1px solid rgba(255,255,255,0.06); background: rgba(7,8,12,0.92); backdrop-filter: blur(12px); }
+    .ghostbtn, .primarybtn { flex: 1; border: 0; border-radius: 14px; padding: 0.8rem; font: inherit; cursor: pointer; }
+    .ghostbtn { background: rgba(255,255,255,0.08); color: var(--text); }
     .primarybtn { background: var(--accent); color: #07080c; font-weight: 650; }
-    .primarybtn:disabled {
-      background: rgba(138, 180, 248, 0.28);
-      color: rgba(232, 234, 240, 0.55);
-      cursor: default;
-    }
-
-    .fab {
-      position: fixed;
-      right: max(1rem, env(safe-area-inset-right));
-      bottom: max(1rem, env(safe-area-inset-bottom));
-      width: 60px;
-      height: 60px;
-      border: 0;
-      border-radius: 22px;
-      background: var(--accent);
-      color: #07080c;
-      display: grid;
-      place-items: center;
-      box-shadow: 0 12px 30px rgba(138, 180, 248, 0.22);
-      cursor: pointer;
-      z-index: 4;
-    }
-
+    .primarybtn:disabled { background: rgba(138,180,248,0.28); color: rgba(232,234,240,0.55); cursor: default; }
+    .fab { position: fixed; right: max(1rem, env(safe-area-inset-right)); bottom: max(1rem, env(safe-area-inset-bottom)); width: 60px; height: 60px; border: 0; border-radius: 22px; background: var(--accent); color: #07080c; display: grid; place-items: center; box-shadow: 0 12px 30px rgba(138,180,248,0.22); cursor: pointer; z-index: 4; }
     .fab svg { width: 28px; height: 28px; stroke-width: 2.4; }
-
-    .overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 20;
-      background: var(--bg);
-      display: flex;
-      flex-direction: column;
-      padding-top: env(safe-area-inset-top);
-    }
-
+    .overlay { position: fixed; inset: 0; z-index: 20; background: var(--bg); display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
     .hidden { display: none !important; }
-
     .searchwrap { flex: 1; min-width: 0; }
-
-    input[type="text"], input[type="search"] {
-      width: 100%;
-      padding: 0.75rem 0.9rem;
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      border-radius: 14px;
-      background: #0d1017;
-      color: var(--text);
-      font: inherit;
-      outline: none;
-    }
-
+    input[type="text"], input[type="search"] { width: 100%; padding: 0.75rem 0.9rem; border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; background: #0d1017; color: var(--text); font: inherit; outline: none; }
     input[type="text"]:focus, input[type="search"]:focus { border-color: var(--accent); }
-
-    .result {
-      display: block;
-      width: 100%;
-      padding: 0.55rem 0;
-      border: 0;
-      background: none;
-      text-align: left;
-      cursor: pointer;
-      user-select: none;
-      -webkit-user-select: none;
-      -webkit-touch-callout: none;
-    }
-
+    .result { display: block; width: 100%; padding: 0.55rem 0; border: 0; background: none; text-align: left; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
     .result .word { display: inline-block; width: auto; padding: 0; }
-
-    .resultPath {
-      display: block;
-      margin-top: 0.15rem;
-      color: var(--muted);
-      font-size: 0.78rem;
-      overflow-wrap: anywhere;
-    }
-
-    .citeEntryBtn {
-      width: 100%;
-      margin-top: 0.55rem;
-      border: 0;
-      background: none;
-      color: var(--muted);
-      font: inherit;
-      font-size: 0.9rem;
-      text-align: center;
-      cursor: pointer;
-      padding: 0.45rem;
-    }
-
+    .resultPath { display: block; margin-top: 0.15rem; color: var(--muted); font-size: 0.76rem; overflow-wrap: anywhere; }
+    .createRow { display: block; width: 100%; padding: 0.6rem 0.2rem; border: 0; border-bottom: 1px solid rgba(255,255,255,0.06); background: none; text-align: left; color: var(--accent); font: inherit; font-size: 1rem; cursor: pointer; }
+    .createRow:active { opacity: 0.7; }
+    .citeEntryBtn { width: 100%; margin-top: 0.55rem; border: 0; background: none; color: var(--muted); font: inherit; font-size: 0.9rem; text-align: center; cursor: pointer; padding: 0.45rem; }
     .citeEntryBtn:active { opacity: 0.7; }
-
-    dialog {
-      width: min(92vw, 360px);
-      padding: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 20px;
-      background: var(--surface);
-      color: var(--text);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
-    }
-
-    dialog::backdrop { background: rgba(0, 0, 0, 0.58); }
+    dialog { width: min(92vw, 360px); padding: 1rem; border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; background: var(--surface); color: var(--text); box-shadow: 0 20px 60px rgba(0,0,0,0.45); }
+    dialog::backdrop { background: rgba(0,0,0,0.58); }
     dialog h2 { margin: 0 0 0.85rem; font-size: 1rem; font-weight: 650; }
     dialog p { margin: 0; color: var(--muted); font-size: 0.95rem; line-height: 1.45; }
-
-    dialog menu {
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.5rem;
-      margin: 1rem 0 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    dialog button {
-      border: 0;
-      border-radius: 14px;
-      padding: 0.68rem 0.9rem;
-      background: rgba(255, 255, 255, 0.08);
-      cursor: pointer;
-    }
-
+    dialog menu { display: flex; justify-content: flex-end; gap: 0.5rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+    dialog button { border: 0; border-radius: 14px; padding: 0.68rem 0.9rem; background: rgba(255,255,255,0.08); cursor: pointer; }
     dialog button:active { opacity: 0.82; }
     dialog button.primary { background: var(--accent); color: #07080c; font-weight: 650; }
     dialog button.danger { background: var(--danger); color: #111111; font-weight: 650; }
-
     #actionDialog menu { flex-direction: column; align-items: stretch; }
     #actionDialog button { width: 100%; text-align: left; }
   </style>
@@ -373,39 +117,28 @@
 <body>
   <div id="app">
     <header class="topbar">
-      <button id="homeBtn" class="iconbtn" aria-label="Cosmos (top level)">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 12l8-7 8 7" />
-          <path d="M6 10.5V19h12v-8.5" />
-          <path d="M10 19v-4.5h4V19" />
-        </svg>
+      <button id="homeBtn" class="iconbtn" aria-label="Home">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l8-7 8 7" /><path d="M6 10.5V19h12v-8.5" /><path d="M10 19v-4.5h4V19" /></svg>
       </button>
-
       <button id="backBtn" class="iconbtn" aria-label="Back">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M15 18l-6-6 6-6" />
-        </svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
       </button>
-
       <div class="titles">
-        <h1 id="screenTitle">Word Cosmos</h1>
+        <h1 id="screenTitle">Cosmos</h1>
         <div id="screenPath" class="path"></div>
       </div>
-
+      <button id="atlasBtn" class="iconbtn" aria-label="Atlas">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="7" r="1.6" /><circle cx="17" cy="6" r="2.4" /><circle cx="12" cy="14" r="1.4" /><circle cx="18" cy="17" r="1.8" /><circle cx="7" cy="17" r="1.2" /></svg>
+      </button>
       <button id="searchBtn" class="iconbtn" aria-label="Search">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="11" cy="11" r="7" />
-          <path d="M20 20l-3.5-3.5" />
-        </svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
       </button>
     </header>
 
     <main id="list" class="list mainList" aria-live="polite"></main>
 
-    <button id="addBtn" class="fab" aria-label="Add word">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 5v14M5 12h14" />
-      </svg>
+    <button id="addBtn" class="fab" aria-label="Add">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
     </button>
 
     <div id="selBar" class="selbar hidden">
@@ -418,77 +151,54 @@
 
   <div id="searchOverlay" class="overlay hidden" role="dialog" aria-label="Search words">
     <header class="topbar">
-      <button id="closeSearchBtn" class="iconbtn" aria-label="Close search">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M18 6L6 18M6 6l12 12" />
-        </svg>
-      </button>
-
-      <div class="searchwrap">
-        <input id="searchInput" type="search" placeholder="Search words" autocomplete="off" spellcheck="false" />
-      </div>
-
+      <button id="closeSearchBtn" class="iconbtn" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" /></svg></button>
+      <div class="searchwrap"><input id="searchInput" type="search" placeholder="Search a word…" autocomplete="off" spellcheck="false" /></div>
       <div class="iconbtn spacer" aria-hidden="true"></div>
     </header>
-
-    <main id="searchResults" class="list searchList"></main>
-    <div id="searchEmpty" class="emptyMsg hidden">No words found.</div>
+    <main id="searchResults" class="list"></main>
   </div>
 
   <div id="moveOverlay" class="overlay hidden" role="dialog" aria-label="Move word">
     <header class="topbar">
-      <button id="moveBackBtn" class="iconbtn" aria-label="Back">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M15 18l-6-6 6-6" />
-        </svg>
-      </button>
-
-      <div class="titles">
-        <h1 id="moveLabel">Cosmos</h1>
-      </div>
-
+      <button id="moveBackBtn" class="iconbtn" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg></button>
+      <div class="titles"><h1 id="moveLabel">Cosmos</h1></div>
       <div class="iconbtn spacer" aria-hidden="true"></div>
     </header>
-
-    <div class="movesearchrow">
-      <input id="moveSearchInput" type="search" placeholder="Search destination words" autocomplete="off" spellcheck="false" />
-    </div>
-
-    <main id="moveList" class="list moveList"></main>
-
+    <div class="homebox" style="margin-top:0;padding:0.4rem 1rem 0.5rem;"><input id="moveSearchInput" type="search" placeholder="Search a destination…" autocomplete="off" spellcheck="false" /></div>
+    <main id="moveList" class="list"></main>
     <div class="movebar">
       <button type="button" id="moveCancelBtn" class="ghostbtn">Cancel</button>
       <button type="button" id="moveConfirmBtn" class="primarybtn">Move here</button>
     </div>
   </div>
 
-  <div id="citeOverlay" class="overlay hidden" role="dialog" aria-label="Cite a word">
+  <div id="linkOverlay" class="overlay hidden" role="dialog" aria-label="Link to a word">
     <header class="topbar">
-      <button id="citeCloseBtn" class="iconbtn" aria-label="Close">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M18 6L6 18M6 6l12 12" />
-        </svg>
-      </button>
-
-      <div class="searchwrap">
-        <input id="citeInput" type="search" placeholder="Cite a word…" autocomplete="off" spellcheck="false" />
-      </div>
-
+      <button id="linkCloseBtn" class="iconbtn" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" /></svg></button>
+      <div class="searchwrap"><input id="linkInput" type="search" placeholder="Link to a word…" autocomplete="off" spellcheck="false" /></div>
       <div class="iconbtn spacer" aria-hidden="true"></div>
     </header>
+    <main id="linkResults" class="list"></main>
+  </div>
 
-    <main id="citeResults" class="list searchList"></main>
+  <div id="atlasOverlay" class="overlay hidden" role="dialog" aria-label="Atlas">
+    <header class="topbar">
+      <button id="atlasCloseBtn" class="iconbtn" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" /></svg></button>
+      <div class="titles"><h1>Atlas</h1><div class="path">every portrait, by weight</div></div>
+      <div class="iconbtn spacer" aria-hidden="true"></div>
+    </header>
+    <main id="atlasResults" class="list cloudList"></main>
   </div>
 
   <dialog id="addDialog">
     <form id="addForm">
-      <h2>New word</h2>
+      <h2 id="addTitle">New word</h2>
       <input id="addInput" type="text" placeholder="word" autocomplete="off" spellcheck="false" required />
       <menu>
         <button type="button" id="addCancel">Cancel</button>
         <button type="submit" class="primary">Add</button>
       </menu>
-      <button type="button" id="citeFromAdd" class="citeEntryBtn">…or cite an existing word</button>
+      <button type="button" id="linkFromAdd" class="citeEntryBtn">…or link to an existing word</button>
     </form>
   </dialog>
 
@@ -514,11 +224,16 @@
 
   <dialog id="actionDialog">
     <menu>
-      <button type="button" id="actionSelect">Select</button>
-      <button type="button" id="actionRename">Rename</button>
-      <button type="button" id="actionMove">Move into…</button>
-      <button type="button" id="actionDelete" class="danger">Delete</button>
-      <button type="button" id="actionCancel">Cancel</button>
+      <button type="button" id="mOpen">Open</button>
+      <button type="button" id="mAdd">Add child</button>
+      <button type="button" id="mRename">Rename</button>
+      <button type="button" id="mMove">Move into…</button>
+      <button type="button" id="mPromote">Promote to portrait</button>
+      <button type="button" id="mLink">Link to…</button>
+      <button type="button" id="mUnlink">Unlink</button>
+      <button type="button" id="mDelete" class="danger">Delete</button>
+      <button type="button" id="mSelect">Select</button>
+      <button type="button" id="mCancel">Cancel</button>
     </menu>
   </dialog>
 
@@ -527,13 +242,16 @@
       "use strict";
 
       const DB_NAME = "word-cosmos";
-      const DB_VERSION = 1;
+      const DB_VERSION = 2;
       const STORE = "nodes";
+      const RECENTS_KEY = "wc-recents";
+      const RECENTS_MAX = 8;
 
       const el = (id) => document.getElementById(id);
 
-      const backBtn = el("backBtn");
       const homeBtn = el("homeBtn");
+      const backBtn = el("backBtn");
+      const atlasBtn = el("atlasBtn");
       const searchBtn = el("searchBtn");
       const addBtn = el("addBtn");
       const screenTitle = el("screenTitle");
@@ -544,7 +262,6 @@
       const closeSearchBtn = el("closeSearchBtn");
       const searchInput = el("searchInput");
       const searchResults = el("searchResults");
-      const searchEmpty = el("searchEmpty");
 
       const moveOverlay = el("moveOverlay");
       const moveBackBtn = el("moveBackBtn");
@@ -554,11 +271,14 @@
       const moveCancelBtn = el("moveCancelBtn");
       const moveSearchInput = el("moveSearchInput");
 
-      const citeOverlay = el("citeOverlay");
-      const citeCloseBtn = el("citeCloseBtn");
-      const citeInput = el("citeInput");
-      const citeResults = el("citeResults");
-      const citeFromAdd = el("citeFromAdd");
+      const linkOverlay = el("linkOverlay");
+      const linkCloseBtn = el("linkCloseBtn");
+      const linkInput = el("linkInput");
+      const linkResults = el("linkResults");
+
+      const atlasOverlay = el("atlasOverlay");
+      const atlasCloseBtn = el("atlasCloseBtn");
+      const atlasResults = el("atlasResults");
 
       const selBar = el("selBar");
       const selCount = el("selCount");
@@ -568,8 +288,10 @@
 
       const addDialog = el("addDialog");
       const addForm = el("addForm");
+      const addTitle = el("addTitle");
       const addInput = el("addInput");
       const addCancel = el("addCancel");
+      const linkFromAdd = el("linkFromAdd");
 
       const renameDialog = el("renameDialog");
       const renameForm = el("renameForm");
@@ -582,14 +304,18 @@
       const deleteConfirm = el("deleteConfirm");
 
       const actionDialog = el("actionDialog");
-      const actionSelect = el("actionSelect");
-      const actionRename = el("actionRename");
-      const actionMove = el("actionMove");
-      const actionDelete = el("actionDelete");
-      const actionCancel = el("actionCancel");
+      const mOpen = el("mOpen");
+      const mAdd = el("mAdd");
+      const mRename = el("mRename");
+      const mMove = el("mMove");
+      const mPromote = el("mPromote");
+      const mLink = el("mLink");
+      const mUnlink = el("mUnlink");
+      const mDelete = el("mDelete");
+      const mSelect = el("mSelect");
+      const mCancel = el("mCancel");
 
       let db = null;
-
       const state = { currentId: "" };
 
       let currentDepth = 0;
@@ -597,7 +323,8 @@
       let searchRunToken = 0;
 
       let pendingActionId = "";
-      let pendingDeleteParentId = "";
+      let addTargetId = "";
+      let linkParentId = "";
 
       let moveSourceId = "";
       let movePickerId = "";
@@ -612,908 +339,723 @@
       let longPressTimer = null;
       let suppressClick = false;
       let searchTimer = null;
-      let moveSearchTimer = null;
-      let citeTimer = null;
+      let moveTimer = null;
+      let linkTimer = null;
       function uid() {
-        if (window.crypto && typeof crypto.randomUUID === "function") {
-          return crypto.randomUUID();
-        }
+        if (window.crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
         return "w-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
       }
-
-      function normalizeTerm(value) {
-        return String(value || "").replace(/\s+/g, " ").trim();
-      }
-
-      function mass(node) {
-        const descendants = node.descendantCount || 0;
-        const spreadBonus = Math.floor((node.childCount || 0) / 3);
-        const reachBonus = Math.floor((node.maxDepth || 0) / 2);
-        return descendants + spreadBonus + reachBonus;
-      }
-
-      function tier(m) {
-        if (m <= 0) return 1;
-        if (m <= 2) return 2;
-        if (m <= 7) return 3;
-        if (m <= 20) return 4;
-        if (m <= 60) return 5;
-        return 6;
-      }
-
-      function sizeClass(m) {
-        return "s" + tier(m);
-      }
-
-      function relevance(termLower, query) {
-        if (!termLower || !query) return 0;
-        if (termLower === query) return 4;
-        if (termLower.startsWith(query)) return 3;
-        const idx = termLower.indexOf(query);
-        if (idx >= 0) {
-          const before = idx === 0 ? " " : termLower[idx - 1];
-          const afterIdx = idx + query.length;
-          const after = afterIdx >= termLower.length ? " " : termLower[afterIdx];
-          const boundary = (c) => !/[a-z0-9]/.test(c);
-          if (boundary(before) && boundary(after)) return 2;
-          return 1;
+      function normalizeTerm(v) { return String(v || "").replace(/\s+/g, " ").trim(); }
+      function mass(n) { return (n.descendantCount || 0) + Math.floor((n.childCount || 0) / 3) + Math.floor((n.maxDepth || 0) / 2); }
+      function tier(m) { if (m <= 0) return 1; if (m <= 2) return 2; if (m <= 7) return 3; if (m <= 20) return 4; if (m <= 60) return 5; return 6; }
+      function sizeClass(m) { return "s" + tier(m); }
+      function relevance(tl, q) {
+        if (!tl || !q) return 0;
+        if (tl === q) return 4;
+        if (tl.startsWith(q)) return 3;
+        const i = tl.indexOf(q);
+        if (i >= 0) {
+          const b = i === 0 ? " " : tl[i - 1];
+          const ai = i + q.length;
+          const a = ai >= tl.length ? " " : tl[ai];
+          const bd = (c) => !/[a-z0-9]/.test(c);
+          return (bd(b) && bd(a)) ? 2 : 1;
         }
         return 0;
       }
-
       function openDB() {
         return new Promise((resolve, reject) => {
           const req = indexedDB.open(DB_NAME, DB_VERSION);
-          req.onupgradeneeded = (event) => {
-            const database = event.target.result;
-            if (!database.objectStoreNames.contains(STORE)) {
-              const store = database.createObjectStore(STORE, { keyPath: "id" });
-              store.createIndex("parentId", "parentId", { unique: false });
-              store.createIndex("termLower", "termLower", { unique: false });
-              store.createIndex("updatedAt", "updatedAt", { unique: false });
+          req.onupgradeneeded = (e) => {
+            const d = e.target.result;
+            const old = e.oldVersion;
+            let store;
+            if (!d.objectStoreNames.contains(STORE)) {
+              store = d.createObjectStore(STORE, { keyPath: "id" });
+            } else {
+              store = e.target.transaction.objectStore(STORE);
             }
+            if (!store.indexNames.contains("parentId")) store.createIndex("parentId", "parentId", { unique: false });
+            if (!store.indexNames.contains("termLower")) store.createIndex("termLower", "termLower", { unique: false });
+            if (!store.indexNames.contains("updatedAt")) store.createIndex("updatedAt", "updatedAt", { unique: false });
+            if (old > 0 && old < 2) store.clear();
           };
           req.onsuccess = () => resolve(req.result);
           req.onerror = () => reject(req.error);
         });
       }
-
-      function requestPromise(req) {
-        return new Promise((resolve, reject) => {
-          req.onsuccess = () => resolve(req.result);
-          req.onerror = () => reject(req.error);
-        });
-      }
-
-      function readOnlyStore() {
-        return db.transaction(STORE, "readonly").objectStore(STORE);
-      }
-
-      function get(id) {
-        if (!id) return Promise.resolve(null);
-        return requestPromise(readOnlyStore().get(id));
-      }
-
-      function put(node) {
-        return new Promise((resolve, reject) => {
-          const tx = db.transaction(STORE, "readwrite");
-          tx.objectStore(STORE).put(node);
-          tx.oncomplete = () => resolve();
-          tx.onerror = () => reject(tx.error);
-          tx.onabort = () => reject(tx.error);
-        });
-      }
-
+      function reqP(r) { return new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+      function roStore() { return db.transaction(STORE, "readonly").objectStore(STORE); }
+      function get(id) { if (!id) return Promise.resolve(null); return reqP(roStore().get(id)); }
+      function put(node) { return new Promise((res, rej) => { const tx = db.transaction(STORE, "readwrite"); tx.objectStore(STORE).put(node); tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error); }); }
       function getChildren(parentId) {
-        return new Promise((resolve, reject) => {
+        return new Promise((res, rej) => {
           const out = [];
           const tx = db.transaction(STORE, "readonly");
-          const index = tx.objectStore(STORE).index("parentId");
-          const req = index.openCursor(IDBKeyRange.only(parentId));
-          req.onsuccess = (event) => {
-            const cursor = event.target.result;
-            if (cursor) { out.push(cursor.value); cursor.continue(); }
-            else { resolve(out); }
-          };
-          req.onerror = () => reject(req.error);
+          const req = tx.objectStore(STORE).index("parentId").openCursor(IDBKeyRange.only(parentId));
+          req.onsuccess = (e) => { const c = e.target.result; if (c) { out.push(c.value); c.continue(); } else res(out); };
+          req.onerror = () => rej(req.error);
         });
       }
-
+      async function maxChildOrder(parentId) {
+        const ch = await getChildren(parentId);
+        let m = -1;
+        for (const c of ch) if ((c.order || 0) > m) m = c.order || 0;
+        return m + 1;
+      }
+      async function maxRootOrder() { return maxChildOrder(""); }
+      function orderSiblings(list) {
+        list.sort((a, b) => {
+          if ((a.order || 0) !== (b.order || 0)) return (a.order || 0) - (b.order || 0);
+          if ((a.createdAt || 0) !== (b.createdAt || 0)) return (a.createdAt || 0) - (b.createdAt || 0);
+          return String(a.term || "").localeCompare(String(b.term || ""), undefined, { sensitivity: "base" });
+        });
+        return list;
+      }
       async function updateAncestorsAfterAdd(child) {
-        let parentId = child.parentId;
-        let childRef = child;
-        let isFirst = true;
+        let parentId = child.parentId; let childRef = child; let first = true;
         while (parentId) {
-          const parent = await get(parentId);
-          if (!parent) break;
-          if (isFirst) { parent.childCount = (parent.childCount || 0) + 1; isFirst = false; }
-          parent.descendantCount = (parent.descendantCount || 0) + 1;
-          const candidateDepth = (childRef.maxDepth || 0) + 1;
-          if (candidateDepth > (parent.maxDepth || 0)) parent.maxDepth = candidateDepth;
-          parent.updatedAt = Date.now();
-          await put(parent);
-          childRef = parent;
-          parentId = parent.parentId;
+          const p = await get(parentId); if (!p) break;
+          if (first) { p.childCount = (p.childCount || 0) + 1; first = false; }
+          p.descendantCount = (p.descendantCount || 0) + 1;
+          const cd = (childRef.maxDepth || 0) + 1;
+          if (cd > (p.maxDepth || 0)) p.maxDepth = cd;
+          p.updatedAt = Date.now(); await put(p);
+          childRef = p; parentId = p.parentId;
         }
       }
-
-      async function addChild(rawTerm) {
-        const term = normalizeTerm(rawTerm);
-        if (!term) return;
-        const now = Date.now();
-        const node = {
-          id: uid(),
-          term,
-          termLower: term.toLowerCase(),
-          parentId: state.currentId,
-          kind: "node",
-          targetId: "",
-          childCount: 0,
-          descendantCount: 0,
-          maxDepth: 0,
-          createdAt: now,
-          updatedAt: now
-        };
-        await put(node);
-        await updateAncestorsAfterAdd(node);
-      }
-
-      async function addCite(targetId) {
-        if (!targetId || targetId === state.currentId) return;
-        const t = await get(targetId);
-        if (!t || t.kind === "ref") return;
-        const now = Date.now();
-        const node = {
-          id: uid(),
-          term: "",
-          termLower: "",
-          parentId: state.currentId,
-          kind: "ref",
-          targetId,
-          childCount: 0,
-          descendantCount: 0,
-          maxDepth: 0,
-          createdAt: now,
-          updatedAt: now
-        };
-        await put(node);
-        await updateAncestorsAfterAdd(node);
-      }
-
-      async function renameNode(id, rawTerm) {
-        const term = normalizeTerm(rawTerm);
-        if (!id || !term) return;
-        const node = await get(id);
-        if (!node) return;
-        node.term = term;
-        node.termLower = term.toLowerCase();
-        node.updatedAt = Date.now();
-        await put(node);
-      }
-
       async function computeMaxDepth(id) {
-        const children = await getChildren(id);
-        if (!children.length) return 0;
-        let max = 0;
-        for (const child of children) max = Math.max(max, child.maxDepth || 0);
-        return max + 1;
+        const ch = await getChildren(id); if (!ch.length) return 0;
+        let m = 0; for (const c of ch) m = Math.max(m, c.maxDepth || 0); return m + 1;
       }
-
       async function collectSubtreeIds(rootId) {
-        const ids = [rootId];
-        const queue = [rootId];
-        while (queue.length) {
-          const parentId = queue.shift();
-          const children = await getChildren(parentId);
-          for (const child of children) { ids.push(child.id); queue.push(child.id); }
-        }
+        const ids = [rootId]; const q = [rootId];
+        while (q.length) { const pid = q.shift(); const ch = await getChildren(pid); for (const c of ch) { ids.push(c.id); q.push(c.id); } }
         return ids;
       }
-
       async function collectSubtreeIdSet(rootId) {
-        const set = new Set([rootId]);
-        const queue = [rootId];
-        while (queue.length) {
-          const parentId = queue.shift();
-          const children = await getChildren(parentId);
-          for (const child of children) { set.add(child.id); queue.push(child.id); }
-        }
-        return set;
+        const s = new Set([rootId]); const q = [rootId];
+        while (q.length) { const pid = q.shift(); const ch = await getChildren(pid); for (const c of ch) { s.add(c.id); q.push(c.id); } }
+        return s;
       }
-
       async function ancestorsIncludingSelf(id) {
-        const arr = [];
-        let cur = id;
-        while (cur) {
-          arr.push(cur);
-          const n = await get(cur);
-          if (!n) break;
-          cur = n.parentId || "";
-        }
+        const arr = []; let cur = id;
+        while (cur) { arr.push(cur); const n = await get(cur); if (!n) break; cur = n.parentId || ""; }
         return arr;
       }
-
-      async function deleteNode(id) {
-        const node = await get(id);
-        if (!node) return null;
-
-        const coreIds = await collectSubtreeIds(id);
-        const coreSet = new Set(coreIds);
-        const coreSize = coreIds.length;
-
-        const dangling = await new Promise((resolve, reject) => {
+      async function rootOf(id) {
+        let cur = id;
+        while (cur) { const n = await get(cur); if (!n) return ""; if (!n.parentId) return cur; cur = n.parentId; }
+        return "";
+      }
+      function compareByMass(a, b) {
+        const ma = mass(a), mb = mass(b);
+        if (mb !== ma) return mb - ma;
+        return String(a.term || "").localeCompare(String(b.term || ""), undefined, { sensitivity: "base" });
+      }
+      function compareResults(a, b) {
+        const ra = relevance(a.node.termLower, a.q || ""), rb = relevance(b.node.termLower, b.q || "");
+        if (rb !== ra) return rb - ra;
+        if (b.m !== a.m) return b.m - a.m;
+        return String(a.node.term || "").localeCompare(String(b.node.term || ""), undefined, { sensitivity: "base" });
+      }
+      function scanMatch(filterFn, query, cb) {
+        return new Promise((res) => {
+          if (!db || !query) { res(); return; }
+          const tx = db.transaction(STORE, "readonly");
+          const req = tx.objectStore(STORE).openCursor();
+          req.onsuccess = (e) => { const c = e.target.result; if (!c) { res(); return; } const n = c.value; if (filterFn(n, query)) cb(n); c.continue(); };
+          req.onerror = () => res();
+        });
+      }
+      function searchSubjects(query) {
+        return new Promise((res) => {
+          if (!db || !query) { res([]); return; }
           const out = [];
           const tx = db.transaction(STORE, "readonly");
           const req = tx.objectStore(STORE).openCursor();
           req.onsuccess = (e) => {
             const c = e.target.result;
-            if (!c) { resolve(out); return; }
-            const v = c.value;
-            if (v.kind === "ref" && v.targetId && coreSet.has(v.targetId) && !coreSet.has(v.id)) out.push(v);
+            if (!c) { out.sort(compareResults); res(out.slice(0, 60)); return; }
+            const n = c.value;
+            if (n.parentId === "" && n.kind !== "link" && n.termLower && n.termLower.includes(query)) out.push({ node: n, m: mass(n), q: query });
             c.continue();
           };
-          req.onerror = () => reject(req.error);
+          req.onerror = () => { out.sort(compareResults); res(out.slice(0, 60)); };
         });
-
-        const allDeleteIds = coreIds.concat(dangling.map((r) => r.id));
-
-        await new Promise((resolve, reject) => {
-          const tx = db.transaction(STORE, "readwrite");
-          const st = tx.objectStore(STORE);
-          for (const d of allDeleteIds) st.delete(d);
-          tx.oncomplete = () => resolve();
-          tx.onerror = () => reject(tx.error);
-          tx.onabort = () => reject(tx.error);
+      }
+      function searchDestinations(query, excludeSet) {
+        return new Promise((res) => {
+          if (!db || !query) { res([]); return; }
+          const out = [];
+          const tx = db.transaction(STORE, "readonly");
+          const req = tx.objectStore(STORE).openCursor();
+          req.onsuccess = (e) => {
+            const c = e.target.result;
+            if (!c) { out.sort(compareResults); res(out.slice(0, 60)); return; }
+            const n = c.value;
+            if (n.kind !== "link" && n.termLower && n.termLower.includes(query) && !(excludeSet && excludeSet.has(n.id))) out.push({ node: n, m: mass(n), q: query });
+            c.continue();
+          };
+          req.onerror = () => { out.sort(compareResults); res(out.slice(0, 60)); };
         });
-
-        let parentId = node.parentId;
-        let isFirst = true;
+      }
+      async function addChild(parentId, rawTerm) {
+        const term = normalizeTerm(rawTerm); if (!term) return "";
+        const now = Date.now();
+        const node = { id: uid(), term, termLower: term.toLowerCase(), parentId: parentId || "", kind: "node", targetId: "", collapsed: false, order: await maxChildOrder(parentId || ""), childCount: 0, descendantCount: 0, maxDepth: 0, createdAt: now, updatedAt: now };
+        await put(node); await updateAncestorsAfterAdd(node); return node.id;
+      }
+      async function addLink(parentId, targetId) {
+        if (!targetId || targetId === (parentId || "")) return "";
+        const t = await get(targetId); if (!t || t.kind === "link" || t.parentId !== "") return "";
+        const now = Date.now();
+        const node = { id: uid(), term: "", termLower: "", parentId: parentId || "", kind: "link", targetId, collapsed: false, order: await maxChildOrder(parentId || ""), childCount: 0, descendantCount: 0, maxDepth: 0, createdAt: now, updatedAt: now };
+        await put(node); await updateAncestorsAfterAdd(node); return node.id;
+      }
+      async function renameNode(id, rawTerm) {
+        const term = normalizeTerm(rawTerm); if (!id || !term) return;
+        const n = await get(id); if (!n || n.kind === "link") return;
+        n.term = term; n.termLower = term.toLowerCase(); n.updatedAt = Date.now(); await put(n);
+      }
+      async function deleteNode(id) {
+        const node = await get(id); if (!node) return null;
+        const coreIds = await collectSubtreeIds(id);
+        const coreSet = new Set(coreIds);
+        const coreSize = coreIds.length;
+        const dangling = await new Promise((res, rej) => {
+          const out = []; const tx = db.transaction(STORE, "readonly"); const req = tx.objectStore(STORE).openCursor();
+          req.onsuccess = (e) => { const c = e.target.result; if (!c) { res(out); return; } const v = c.value; if (v.kind === "link" && v.targetId && coreSet.has(v.targetId) && !coreSet.has(v.id)) out.push(v); c.continue(); };
+          req.onerror = () => rej(req.error);
+        });
+        const all = coreIds.concat(dangling.map((r) => r.id));
+        await new Promise((res, rej) => { const tx = db.transaction(STORE, "readwrite"); const st = tx.objectStore(STORE); for (const d of all) st.delete(d); tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error); });
+        let parentId = node.parentId; let first = true;
         while (parentId) {
-          const p = await get(parentId);
-          if (!p) break;
-          if (isFirst) { p.childCount = Math.max(0, (p.childCount || 0) - 1); isFirst = false; }
+          const p = await get(parentId); if (!p) break;
+          if (first) { p.childCount = Math.max(0, (p.childCount || 0) - 1); first = false; }
           p.descendantCount = Math.max(0, (p.descendantCount || 0) - coreSize);
-          p.maxDepth = await computeMaxDepth(p.id);
-          p.updatedAt = Date.now();
-          await put(p);
+          p.maxDepth = await computeMaxDepth(p.id); p.updatedAt = Date.now(); await put(p);
           parentId = p.parentId;
         }
-
         for (const r of dangling) {
-          let rp = r.parentId;
-          let first = true;
-          while (rp) {
-            const p = await get(rp);
-            if (!p) break;
-            if (first) { p.childCount = Math.max(0, (p.childCount || 0) - 1); first = false; }
-            p.descendantCount = Math.max(0, (p.descendantCount || 0) - 1);
-            p.maxDepth = await computeMaxDepth(p.id);
-            p.updatedAt = Date.now();
-            await put(p);
-            rp = p.parentId;
-          }
+          let rp = r.parentId; let f = true;
+          while (rp) { const p = await get(rp); if (!p) break; if (f) { p.childCount = Math.max(0, (p.childCount || 0) - 1); f = false; } p.descendantCount = Math.max(0, (p.descendantCount || 0) - 1); p.maxDepth = await computeMaxDepth(p.id); p.updatedAt = Date.now(); await put(p); rp = p.parentId; }
         }
-
         return node;
-    }
+      }
       async function moveNode(id, newParentId) {
-        const node = await get(id);
-        if (!node) return;
+        const node = await get(id); if (!node) return;
         if (id === newParentId) return;
         const oldParentId = node.parentId || "";
-        if (oldParentId === newParentId) {
-          node.parentId = newParentId;
-          node.updatedAt = Date.now();
-          await put(node);
-          return;
-        }
+        if (oldParentId === newParentId) { node.updatedAt = Date.now(); await put(node); return; }
         const size = 1 + (node.descendantCount || 0);
         const depth = 1 + (node.maxDepth || 0);
         const chainOld = await ancestorsIncludingSelf(oldParentId);
         const chainNew = await ancestorsIncludingSelf(newParentId);
-        const oldSet = new Set(chainOld);
-        const newSet = new Set(chainNew);
-        node.parentId = newParentId;
-        node.updatedAt = Date.now();
-        await put(node);
+        const oldSet = new Set(chainOld); const newSet = new Set(chainNew);
+        node.parentId = newParentId; node.order = await maxChildOrder(newParentId); node.updatedAt = Date.now(); await put(node);
         for (let i = 0; i < chainNew.length; i++) {
-          const xid = chainNew[i];
-          if (oldSet.has(xid)) continue;
-          const x = await get(xid);
-          if (!x) continue;
+          const xid = chainNew[i]; if (oldSet.has(xid)) continue;
+          const x = await get(xid); if (!x) continue;
           x.descendantCount = (x.descendantCount || 0) + size;
-          const contributed = depth + i;
-          if (contributed > (x.maxDepth || 0)) x.maxDepth = contributed;
-          x.updatedAt = Date.now();
-          await put(x);
+          const contrib = depth + i; if (contrib > (x.maxDepth || 0)) x.maxDepth = contrib;
+          x.updatedAt = Date.now(); await put(x);
         }
         for (const xid of chainOld) {
-          const x = await get(xid);
-          if (!x) continue;
+          const x = await get(xid); if (!x) continue;
           if (!newSet.has(xid)) x.descendantCount = Math.max(0, (x.descendantCount || 0) - size);
-          x.maxDepth = await computeMaxDepth(xid);
-          x.updatedAt = Date.now();
-          await put(x);
+          x.maxDepth = await computeMaxDepth(xid); x.updatedAt = Date.now(); await put(x);
         }
       }
-
-      async function getPathTerms(id) {
-        const terms = [];
-        let current = id;
-        while (current) {
-          const node = await get(current);
-          if (!node) break;
-          terms.unshift(node.term);
-          current = node.parentId;
+      async function promoteNode(id) {
+        const node = await get(id); if (!node || node.parentId === "" || node.kind === "link") return;
+        const oldParent = node.parentId; const oldOrder = node.order || 0;
+        const carry = node.descendantCount || 0;
+        const link = { id: uid(), term: "", termLower: "", parentId: oldParent, kind: "link", targetId: id, collapsed: false, order: oldOrder, childCount: 0, descendantCount: 0, maxDepth: 0, createdAt: Date.now(), updatedAt: Date.now() };
+        await put(link);
+        node.parentId = ""; node.order = await maxRootOrder(); node.updatedAt = Date.now(); await put(node);
+        const chainOld = await ancestorsIncludingSelf(oldParent);
+        for (const xid of chainOld) {
+          const x = await get(xid); if (!x) continue;
+          x.descendantCount = Math.max(0, (x.descendantCount || 0) - carry);
+          x.maxDepth = await computeMaxDepth(xid); x.updatedAt = Date.now(); await put(x);
         }
-        return terms;
       }
+      function pushRecent(id) {
+        try {
+          let arr = JSON.parse(localStorage.getItem(RECENTS_KEY) || "[]");
+          if (!Array.isArray(arr)) arr = [];
+          arr = arr.filter((x) => x !== id);
+          arr.unshift(id);
+          if (arr.length > RECENTS_MAX) arr = arr.slice(0, RECENTS_MAX);
+          localStorage.setItem(RECENTS_KEY, JSON.stringify(arr));
+        } catch {}
+      }
+      function getRecents() { try { const a = JSON.parse(localStorage.getItem(RECENTS_KEY) || "[]"); return Array.isArray(a) ? a : []; } catch { return []; } }
+      function setRecents(arr) { try { localStorage.setItem(RECENTS_KEY, JSON.stringify(arr)); } catch {} }
 
-      function formatPath(terms) {
-        if (!terms.length) return "";
-        if (terms.length <= 2) return terms.join(" › ");
-        return terms[0] + " › … › " + terms.slice(-2).join(" › ");
-      }
+      function indentFor(level) { const l = Math.min(level, 5); return (0.35 + (l - 1) * 0.85).toFixed(2) + "rem"; }
 
-      function compareNodes(a, b) {
-        const ma = mass(a);
-        const mb = mass(b);
-        if (mb !== ma) return mb - ma;
-        return a.term.localeCompare(b.term, undefined, { sensitivity: "base" });
-      }
+      async function buildRows(nodes, level, container) {
+        orderSiblings(nodes);
+        for (let i = 0; i < nodes.length; i++) {
+          const node = nodes[i];
+          const row = document.createElement("button");
+          row.type = "button";
+          row.className = "row lvl" + level;
+          row.style.paddingLeft = indentFor(level);
+          if (selectMode && selectedIds.has(node.id)) row.classList.add("sel");
 
-      function compareResults(a, b) {
-        const ra = relevance(a.node.termLower, a.q || "");
-        const rb = relevance(b.node.termLower, b.q || "");
-        if (rb !== ra) return rb - ra;
-        if (b.m !== a.m) return b.m - a.m;
-        return a.node.term.localeCompare(b.node.term, undefined, { sensitivity: "base" });
-      }
+          const isLink = node.kind === "link";
+          const hasKids = !isLink && (node.childCount || 0) > 0;
 
-      function searchNodes(query) {
-        return new Promise((resolve) => {
-          if (!db || !query) { resolve([]); return; }
-          const results = [];
-          const tx = db.transaction(STORE, "readonly");
-          const req = tx.objectStore(STORE).openCursor();
-          req.onsuccess = (event) => {
-            const cursor = event.target.result;
-            if (!cursor) { results.sort(compareResults); resolve(results.slice(0, 50)); return; }
-            const node = cursor.value;
-            if (node.kind !== "ref" && node.termLower && node.termLower.includes(query)) {
-              results.push({ node, m: mass(node), q: query });
-            }
-            cursor.continue();
-          };
-          req.onerror = () => { results.sort(compareResults); resolve(results.slice(0, 50)); };
-        });
-      }
+          const tgl = document.createElement("span");
+          tgl.className = "tgl";
+          tgl.textContent = isLink ? "↗" : (hasKids ? (node.collapsed ? "▸" : "▾") : "·");
+          row.appendChild(tgl);
 
-      function moveSearchNodes(query, excludeSet) {
-        return new Promise((resolve) => {
-          if (!db || !query) { resolve([]); return; }
-          const results = [];
-          const tx = db.transaction(STORE, "readonly");
-          const req = tx.objectStore(STORE).openCursor();
-          req.onsuccess = (event) => {
-            const cursor = event.target.result;
-            if (!cursor) { results.sort(compareResults); resolve(results.slice(0, 50)); return; }
-            const node = cursor.value;
-            if (
-              node.kind !== "ref" &&
-              node.termLower &&
-              node.termLower.includes(query) &&
-              !(excludeSet && excludeSet.has(node.id))
-            ) {
-              results.push({ node, m: mass(node), q: query });
-            }
-            cursor.continue();
-          };
-          req.onerror = () => { results.sort(compareResults); resolve(results.slice(0, 50)); };
-        });
-      }
-      async function createWordButton(node) {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        if (node.kind === "ref") {
-          const t = node.targetId ? await get(node.targetId) : null;
-          btn.className = "word cite";
-          btn.textContent = t ? t.term : "(gone)";
-          btn.dataset.id = node.id;
-          const portalId = t ? t.id : "";
-          attachLongPress(btn, node.id, () => {
-            if (selectMode) toggleSelect(node.id, btn);
-            else if (portalId) pushTo(portalId);
+          if (level === 1 && !isLink) {
+            const num = document.createElement("span");
+            num.className = "num";
+            num.textContent = (i + 1) + ".";
+            row.appendChild(num);
+          }
+
+          const txt = document.createElement("span");
+          txt.className = "txt" + (isLink ? " link" : "");
+          if (isLink) {
+            const t = node.targetId ? await get(node.targetId) : null;
+            txt.textContent = t ? t.term : "(gone)";
+          } else {
+            txt.textContent = node.term;
+          }
+          row.appendChild(txt);
+
+          const nid = node.id;
+          const nlink = isLink ? (node.targetId || "") : "";
+          const nkids = hasKids;
+          attachLongPress(row, nid, async () => {
+            if (selectMode) { toggleSelect(nid, row); return; }
+            if (isLink) { if (nlink) pushTo(nlink); return; }
+            if (nkids) { node.collapsed = !node.collapsed; await put(node); render(); return; }
           });
-          return btn;
+
+          container.appendChild(row);
+
+          if (!isLink && !node.collapsed && nkids) {
+            const kids = await getChildren(nid);
+            if (kids.length) {
+              const sub = document.createElement("div");
+              await buildRows(kids, level + 1, sub);
+              container.appendChild(sub);
+            }
+          }
         }
-        btn.className = "word " + sizeClass(mass(node));
-        if (selectMode && selectedIds.has(node.id)) btn.classList.add("sel");
-        btn.textContent = node.term;
-        btn.dataset.id = node.id;
-        attachLongPress(btn, node.id, () => {
-          if (selectMode) toggleSelect(node.id, btn);
-          else pushTo(node.id);
-        });
-        return btn;
       }
 
-      function createNavButton(node) {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "word " + sizeClass(mass(node));
-        btn.textContent = node.term;
-        btn.addEventListener("click", () => {
-          movePickerId = node.id;
-          renderMove();
-        });
-        return btn;
-      }
+      async function renderPortrait(rootId) {
+        const token = ++renderToken;
+        const root = await get(rootId);
+        if (token !== renderToken) return;
+        if (!root || root.parentId !== "" || root.kind === "link") { pushTo(""); return; }
 
-      async function renderList(children, insideNode) {
+        screenTitle.textContent = root.term;
+        screenPath.textContent = "";
+        attachLongPress(screenTitle, rootId, () => {});
+
+        const children = await getChildren(rootId);
+        if (token !== renderToken) return;
         list.innerHTML = "";
         if (!children.length) {
-          const msg = document.createElement("div");
-          msg.className = "emptyMsg";
-          msg.textContent = insideNode ? "No words inside yet." : "Plant the first word.";
-          list.appendChild(msg);
-          return;
+          const m = document.createElement("div");
+          m.className = "emptyMsg";
+          m.textContent = "This portrait is empty. Tap + to add its first section.";
+          list.appendChild(m);
+        } else {
+          await buildRows(children, 1, list);
         }
-        children.sort(compareNodes);
-        for (const node of children) list.appendChild(await createWordButton(node));
+        pushRecent(rootId);
+      }
+
+      async function renderHome() {
+        const token = ++renderToken;
+        screenTitle.textContent = "Cosmos";
+        screenPath.textContent = "";
+        list.innerHTML = "";
+
+        const box = document.createElement("div");
+        box.className = "homebox";
+        const fake = document.createElement("button");
+        fake.type = "button";
+        fake.className = "searchfake";
+        fake.textContent = "Search a word…";
+        fake.addEventListener("click", openSearch);
+        box.appendChild(fake);
+        list.appendChild(box);
+
+        const ids = getRecents();
+        const words = [];
+        for (const id of ids) {
+          const n = await get(id);
+          if (token !== renderToken) return;
+          if (n && n.parentId === "" && n.kind !== "link") words.push({ id, term: n.term });
+        }
+        const kept = ids.filter((id) => words.some((w) => w.id === id));
+        if (kept.length !== ids.length) setRecents(kept);
+
+        if (words.length) {
+          const rec = document.createElement("div");
+          rec.className = "recents";
+          const lab = document.createElement("div");
+          lab.className = "rlabel";
+          lab.textContent = "recent";
+          rec.appendChild(lab);
+          for (const w of words) {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "rword";
+            b.textContent = w.term;
+            b.addEventListener("click", () => pushTo(w.id));
+            rec.appendChild(b);
+          }
+          list.appendChild(rec);
+        }
       }
 
       async function render() {
-        const token = ++renderToken;
         const id = state.currentId;
-        backBtn.style.visibility = id ? "visible" : "hidden";
-        homeBtn.style.visibility = id ? "visible" : "hidden";
-        if (id) {
-          const node = await get(id);
-          if (token !== renderToken) return;
-          if (!node) { replaceTo(""); return; }
-          screenTitle.textContent = node.term;
-          const pathTerms = await getPathTerms(node.parentId);
-          if (token !== renderToken) return;
-          screenPath.textContent = formatPath(pathTerms);
-          const children = await getChildren(id);
-          if (token !== renderToken) return;
-          await renderList(children, true);
-        } else {
-          screenTitle.textContent = "Word Cosmos";
-          screenPath.textContent = "";
-          const children = await getChildren("");
-          if (token !== renderToken) return;
-          await renderList(children, false);
-        }
+        const onHome = !id;
+        homeBtn.style.visibility = onHome ? "hidden" : "visible";
+        backBtn.style.visibility = onHome ? "hidden" : "visible";
+        atlasBtn.style.visibility = onHome ? "visible" : "hidden";
+        searchBtn.style.visibility = onHome ? "hidden" : "visible";
+        if (onHome) await renderHome();
+        else await renderPortrait(id);
       }
 
-      function urlForId(id) {
-        return "#/" + encodeURIComponent(id || "");
-      }
-
+      function urlForId(id) { return "#/" + encodeURIComponent(id || ""); }
       function idFromHash() {
-        const hash = location.hash;
-        if (!hash || hash === "#" || hash === "#/") return "";
-        const raw = hash.startsWith("#/") ? hash.slice(2) : hash.slice(1);
+        const h = location.hash;
+        if (!h || h === "#" || h === "#/") return "";
+        const raw = h.startsWith("#/") ? h.slice(2) : h.slice(1);
         try { return decodeURIComponent(raw); } catch { return ""; }
       }
-
       function pushTo(id, force) {
-        const wasSelect = selectMode;
-        if (wasSelect) { selectMode = false; selectedIds = new Set(); updateSelBar(); }
-        if (!force && id === state.currentId) { if (wasSelect) render(); return; }
+        const wasSel = selectMode;
+        if (wasSel) { selectMode = false; selectedIds = new Set(); updateSelBar(); }
+        if (!force && id === state.currentId) { if (wasSel) render(); return; }
         const depth = currentDepth + 1;
         history.pushState({ id, depth }, "", urlForId(id));
-        currentDepth = depth;
-        state.currentId = id;
-        render();
+        currentDepth = depth; state.currentId = id; render();
       }
-
       function replaceTo(id) {
         if (selectMode) { selectMode = false; selectedIds = new Set(); updateSelBar(); }
         history.replaceState({ id, depth: currentDepth }, "", urlForId(id));
-        state.currentId = id;
-        render();
-      }
-
-      async function openAction(id) {
-        pendingActionId = id;
-        const n = await get(id);
-        actionRename.style.display = (n && n.kind === "ref") ? "none" : "";
-        actionSelect.style.display = selectMode ? "none" : "";
-        actionDialog.showModal();
-      }
-
-      function attachLongPress(nodeEl, id, onClick) {
-        let startX = 0;
-        let startY = 0;
-        nodeEl.addEventListener("pointerdown", (event) => {
-          if (event.pointerType === "mouse" && event.button !== 0) return;
-          startX = event.clientX;
-          startY = event.clientY;
-          suppressClick = false;
-          clearTimeout(longPressTimer);
-          longPressTimer = setTimeout(() => { suppressClick = true; openAction(id); }, 450);
-        });
-        nodeEl.addEventListener("pointermove", (event) => {
-          const dx = Math.abs(event.clientX - startX);
-          const dy = Math.abs(event.clientY - startY);
-          if (dx > 10 || dy > 10) clearTimeout(longPressTimer);
-        });
-        const cancelLongPress = () => clearTimeout(longPressTimer);
-        nodeEl.addEventListener("pointerup", cancelLongPress);
-        nodeEl.addEventListener("pointercancel", cancelLongPress);
-        nodeEl.addEventListener("lostpointercapture", cancelLongPress);
-        nodeEl.addEventListener("click", (event) => {
-          if (suppressClick) { suppressClick = false; event.preventDefault(); event.stopPropagation(); return; }
-          if (onClick) onClick(event);
-          else pushTo(id);
-        });
-        nodeEl.addEventListener("contextmenu", (event) => { event.preventDefault(); openAction(id); });
-      }
-      async function runSearch() {
-        const myToken = ++searchRunToken;
-        const query = searchInput.value.trim().toLowerCase();
-        searchResults.innerHTML = "";
-        if (!query) { searchEmpty.classList.add("hidden"); updateSelBar(); return; }
-        const matches = await searchNodes(query);
-        if (myToken !== searchRunToken) return;
-        searchResults.innerHTML = "";
-        if (!matches.length) { searchEmpty.classList.remove("hidden"); return; }
-        searchEmpty.classList.add("hidden");
-        for (const item of matches) {
-          const pathTerms = await getPathTerms(item.node.parentId);
-          if (myToken !== searchRunToken) return;
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = "result";
-          const word = document.createElement("span");
-          word.className = "word " + sizeClass(item.m);
-          if (selectMode && selectedIds.has(item.node.id)) word.classList.add("sel");
-          word.textContent = item.node.term;
-          const path = document.createElement("span");
-          path.className = "resultPath";
-          path.textContent = formatPath(pathTerms);
-          btn.append(word, path);
-          attachLongPress(btn, item.node.id, () => {
-            if (selectMode) toggleSelect(item.node.id, word);
-            else { closeSearch(); pushTo(item.node.id); }
-          });
-          searchResults.appendChild(btn);
-        }
-      }
-
-      function openSearch() {
-        searchOverlay.classList.remove("hidden");
-        searchInput.value = "";
-        searchResults.innerHTML = "";
-        searchEmpty.classList.add("hidden");
-        setTimeout(() => searchInput.focus(), 50);
-      }
-
-      function closeSearch() {
-        searchOverlay.classList.add("hidden");
-        searchInput.blur();
-      }
-
-      function searchIsOpen() {
-        return !searchOverlay.classList.contains("hidden");
+        state.currentId = id; render();
       }
 
       function updateSelBar() {
-        if (!selectMode || !moveOverlay.classList.contains("hidden")) { selBar.classList.add("hidden"); return; }
+        const busy = !moveOverlay.classList.contains("hidden") || !linkOverlay.classList.contains("hidden") || !atlasOverlay.classList.contains("hidden");
+        if (!selectMode || busy) { selBar.classList.add("hidden"); return; }
         selBar.classList.remove("hidden");
         const n = selectedIds.size;
         selCount.textContent = n === 0 ? "Tap words to select" : (n === 1 ? "1 word selected" : n + " words selected");
-        selMoveBtn.disabled = n === 0;
-        selMoveBtn.textContent = "Move";
+        selMoveBtn.disabled = n === 0; selMoveBtn.textContent = "Move";
         selDeleteBtn.disabled = n === 0;
       }
-
-      function enterSelectMode(id) {
-        selectMode = true;
-        selectedIds = new Set([id]);
-        updateSelBar();
-        if (searchIsOpen()) runSearch(); else render();
-      }
-
-      function exitSelectMode() {
-        if (!selectMode) return;
-        selectMode = false;
-        selectedIds = new Set();
-        updateSelBar();
-        if (searchIsOpen()) runSearch(); else render();
-      }
-
+      function enterSelectMode(id) { selectMode = true; selectedIds = new Set([id]); updateSelBar(); render(); }
+      function exitSelectMode() { if (!selectMode) return; selectMode = false; selectedIds = new Set(); updateSelBar(); render(); }
       function toggleSelect(id, nodeEl) {
         if (selectedIds.has(id)) { selectedIds.delete(id); if (nodeEl) nodeEl.classList.remove("sel"); }
         else { selectedIds.add(id); if (nodeEl) nodeEl.classList.add("sel"); }
         updateSelBar();
       }
 
+      function attachLongPress(nodeEl, id, onClick) {
+        let sx = 0, sy = 0;
+        nodeEl.addEventListener("pointerdown", (e) => {
+          if (e.pointerType === "mouse" && e.button !== 0) return;
+          sx = e.clientX; sy = e.clientY; suppressClick = false;
+          clearTimeout(longPressTimer);
+          longPressTimer = setTimeout(() => { suppressClick = true; openAction(id); }, 450);
+        });
+        nodeEl.addEventListener("pointermove", (e) => { if (Math.abs(e.clientX - sx) > 10 || Math.abs(e.clientY - sy) > 10) clearTimeout(longPressTimer); });
+        const cancel = () => clearTimeout(longPressTimer);
+        nodeEl.addEventListener("pointerup", cancel);
+        nodeEl.addEventListener("pointercancel", cancel);
+        nodeEl.addEventListener("lostpointercapture", cancel);
+        nodeEl.addEventListener("click", (e) => {
+          if (suppressClick) { suppressClick = false; e.preventDefault(); e.stopPropagation(); return; }
+          if (onClick) onClick(e);
+        });
+        nodeEl.addEventListener("contextmenu", (e) => { e.preventDefault(); openAction(id); });
+      }
+
+      async function openAction(id) {
+        pendingActionId = id;
+        const n = await get(id);
+        const isRoot = !!n && n.parentId === "" && n.kind !== "link";
+        const isLink = !!n && n.kind === "link";
+        const show = (b, v) => { b.style.display = v ? "" : "none"; };
+        show(mOpen, isLink);
+        show(mAdd, !isLink); mAdd.textContent = isRoot ? "Add section" : "Add child";
+        show(mRename, !isLink);
+        show(mMove, !isLink && !isRoot);
+        show(mPromote, !isLink && !isRoot);
+        show(mLink, !isLink);
+        show(mUnlink, isLink);
+        show(mDelete, !isLink);
+        show(mSelect, !selectMode);
+        actionDialog.showModal();
+      }
+
+      function openSearch() { searchOverlay.classList.remove("hidden"); searchInput.value = ""; searchResults.innerHTML = ""; setTimeout(() => searchInput.focus(), 50); }
+      function closeSearch() { searchOverlay.classList.add("hidden"); searchInput.blur(); }
+      function searchIsOpen() { return !searchOverlay.classList.contains("hidden"); }
+
+      async function runSearch() {
+        const my = ++searchRunToken;
+        const q = searchInput.value.trim().toLowerCase();
+        searchResults.innerHTML = "";
+        if (!q) return;
+        const matches = await searchSubjects(q);
+        if (my !== searchRunToken) return;
+        searchResults.innerHTML = "";
+        const exact = matches.some((m) => m.node.termLower === q);
+        if (!exact) {
+          const cr = document.createElement("button");
+          cr.type = "button"; cr.className = "createRow";
+          cr.textContent = "Create “" + searchInput.value.trim() + "”";
+          cr.addEventListener("click", async () => {
+            const term = normalizeTerm(searchInput.value); if (!term) return;
+            const id = await addChild("", term);
+            closeSearch(); if (id) pushTo(id, true);
+          });
+          searchResults.appendChild(cr);
+        }
+        for (const item of matches) {
+          if (my !== searchRunToken) return;
+          const btn = document.createElement("button");
+          btn.type = "button"; btn.className = "result";
+          const w = document.createElement("span"); w.className = "word " + sizeClass(item.m); w.textContent = item.node.term;
+          const p = document.createElement("span"); p.className = "resultPath"; p.textContent = "portrait";
+          btn.append(w, p);
+          const sid = item.node.id;
+          btn.addEventListener("click", () => { closeSearch(); pushTo(sid); });
+          searchResults.appendChild(btn);
+        }
+      }
+
       async function openMovePicker(sourceId) {
         moveSourceId = sourceId;
         if (moveBatch) {
-          const union = new Set();
-          for (const sid of selectedIds) {
-            const sub = await collectSubtreeIdSet(sid);
-            for (const x of sub) union.add(x);
-          }
-          moveExcludedSet = union;
-          movePickerId = "";
+          const u = new Set();
+          for (const sid of selectedIds) { const sub = await collectSubtreeIdSet(sid); for (const x of sub) u.add(x); }
+          moveExcludedSet = u; movePickerId = "";
         } else {
           moveExcludedSet = await collectSubtreeIdSet(sourceId);
-          const srcNode = await get(sourceId);
-          movePickerId = srcNode ? (srcNode.parentId || "") : "";
+          const src = await get(sourceId);
+          movePickerId = src ? (src.parentId || "") : "";
         }
         moveSearchInput.value = "";
         await renderMove();
         moveOverlay.classList.remove("hidden");
         updateSelBar();
       }
+      function closeMove() { moveOverlay.classList.add("hidden"); moveSourceId = ""; movePickerId = ""; moveExcludedSet = null; moveBatch = false; updateSelBar(); }
 
-      function closeMove() {
-        moveOverlay.classList.add("hidden");
-        moveSourceId = "";
-        movePickerId = "";
-        moveExcludedSet = null;
-        moveBatch = false;
-        updateSelBar();
+      function createDestButton(node) {
+        const btn = document.createElement("button");
+        btn.type = "button"; btn.className = "word " + sizeClass(mass(node));
+        btn.textContent = node.term;
+        btn.addEventListener("click", () => { movePickerId = node.id; renderMove(); });
+        return btn;
       }
 
       async function renderMove() {
-        const query = moveSearchInput.value.trim().toLowerCase();
-        moveConfirmBtn.disabled = false;
-        if (query) { await renderMoveResults(query); return; }
+        const q = moveSearchInput.value.trim().toLowerCase();
+        if (q) { await renderMoveResults(q); return; }
         const id = movePickerId;
-        let currentNode = null;
-        if (id) currentNode = await get(id);
-        moveLabel.textContent = currentNode ? currentNode.term : "Cosmos · top level";
+        let cur = null; if (id) cur = await get(id);
+        moveLabel.textContent = cur ? cur.term : "Choose a portrait…";
         const children = await getChildren(id);
-        const filtered = children.filter((c) => c.kind !== "ref" && (!moveExcludedSet || !moveExcludedSet.has(c.id)));
-        filtered.sort(compareNodes);
+        const filt = children.filter((c) => c.kind !== "link" && (!moveExcludedSet || !moveExcludedSet.has(c.id)));
+        filt.sort(compareByMass);
         moveList.innerHTML = "";
-        if (!filtered.length) {
-          const m = document.createElement("div");
-          m.className = "emptyMsg";
-          m.textContent = "No other words here. Use “Move here” below.";
+        if (!filt.length) {
+          const m = document.createElement("div"); m.className = "emptyMsg";
+          m.textContent = id ? "No sections here. Confirm below to move into this word." : "Open a portrait, then move into it.";
           moveList.appendChild(m);
         } else {
-          for (const c of filtered) moveList.appendChild(createNavButton(c));
+          for (const c of filt) moveList.appendChild(createDestButton(c));
         }
-        moveConfirmBtn.textContent = currentNode
-          ? "Move into “" + currentNode.term + "”"
-          : "Move to Cosmos (top level)";
+        moveConfirmBtn.disabled = !id;
+        moveConfirmBtn.textContent = cur ? ("Move into “" + cur.term + "”") : "Pick a destination";
       }
-
-      async function renderMoveResults(query) {
-        const matches = await moveSearchNodes(query, moveExcludedSet);
+      async function renderMoveResults(q) {
+        const matches = await searchDestinations(q, moveExcludedSet);
         moveList.innerHTML = "";
-        moveConfirmBtn.disabled = true;
-        moveConfirmBtn.textContent = "Pick a destination";
-        if (!matches.length) {
-          const m = document.createElement("div");
-          m.className = "emptyMsg";
-          m.textContent = "No destination words found.";
-          moveList.appendChild(m);
-          return;
-        }
+        moveConfirmBtn.disabled = true; moveConfirmBtn.textContent = "Pick a destination";
+        if (!matches.length) { const m = document.createElement("div"); m.className = "emptyMsg"; m.textContent = "No destination words found."; moveList.appendChild(m); return; }
         for (const item of matches) {
-          const pathTerms = await getPathTerms(item.node.parentId);
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = "result";
-          const word = document.createElement("span");
-          word.className = "word " + sizeClass(item.m);
-          word.textContent = item.node.term;
-          const path = document.createElement("span");
-          path.className = "resultPath";
-          path.textContent = formatPath(pathTerms);
-          btn.append(word, path);
-          btn.addEventListener("click", () => {
-            movePickerId = item.node.id;
-            moveSearchInput.value = "";
-            renderMove();
-          });
+          const pathTerms = await getPathDisplay(item.node.parentId);
+          const btn = document.createElement("button"); btn.type = "button"; btn.className = "result";
+          const w = document.createElement("span"); w.className = "word " + sizeClass(item.m); w.textContent = item.node.term;
+          const p = document.createElement("span"); p.className = "resultPath"; p.textContent = pathTerms;
+          btn.append(w, p);
+          btn.addEventListener("click", () => { movePickerId = item.node.id; moveSearchInput.value = ""; renderMove(); });
           moveList.appendChild(btn);
         }
       }
 
-      function openCitePicker() {
-        citeOverlay.classList.remove("hidden");
-        citeInput.value = "";
-        citeResults.innerHTML = "";
-        renderCiteResults();
-        setTimeout(() => citeInput.focus(), 50);
+      async function getPathDisplay(parentId) {
+        const terms = []; let cur = parentId;
+        while (cur) { const n = await get(cur); if (!n) break; if (n.kind !== "link" && n.term) terms.unshift(n.term); cur = n.parentId; }
+        if (!terms.length) return "top level";
+        if (terms.length <= 2) return terms.join(" › ");
+        return terms[0] + " › … › " + terms.slice(-2).join(" › ");
       }
 
-      function closeCite() {
-        citeOverlay.classList.add("hidden");
-        citeInput.blur();
-      }
-
-      async function renderCiteResults() {
-        const query = citeInput.value.trim().toLowerCase();
-        citeResults.innerHTML = "";
-        if (!query) {
-          const m = document.createElement("div");
-          m.className = "emptyMsg";
-          m.textContent = "Type to find a word to cite.";
-          citeResults.appendChild(m);
-          return;
-        }
-        const matches = await moveSearchNodes(query, new Set([state.currentId]));
-        if (!matches.length) {
-          const m = document.createElement("div");
-          m.className = "emptyMsg";
-          m.textContent = "No words found.";
-          citeResults.appendChild(m);
-          return;
-        }
+      function openLinkPicker(parentId) { linkParentId = parentId; linkOverlay.classList.remove("hidden"); linkInput.value = ""; linkResults.innerHTML = ""; renderLinkResults(); setTimeout(() => linkInput.focus(), 50); }
+      function closeLink() { linkOverlay.classList.add("hidden"); linkInput.blur(); }
+      async function renderLinkResults() {
+        const q = linkInput.value.trim().toLowerCase();
+        linkResults.innerHTML = "";
+        if (!q) { const m = document.createElement("div"); m.className = "emptyMsg"; m.textContent = "Type to find a word to link to."; linkResults.appendChild(m); return; }
+        const matches = await searchSubjects(q);
+        if (!matches.length) { const m = document.createElement("div"); m.className = "emptyMsg"; m.textContent = "No words found."; linkResults.appendChild(m); return; }
         for (const item of matches) {
-          const pathTerms = await getPathTerms(item.node.parentId);
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = "result";
-          const word = document.createElement("span");
-          word.className = "word " + sizeClass(item.m);
-          word.textContent = item.node.term;
-          const path = document.createElement("span");
-          path.className = "resultPath";
-          path.textContent = formatPath(pathTerms);
-          btn.append(word, path);
-          btn.addEventListener("click", async () => {
-            await addCite(item.node.id);
-            closeCite();
-            await render();
-          });
-          citeResults.appendChild(btn);
+          const btn = document.createElement("button"); btn.type = "button"; btn.className = "result";
+          const w = document.createElement("span"); w.className = "word " + sizeClass(item.m); w.textContent = item.node.term;
+          const p = document.createElement("span"); p.className = "resultPath"; p.textContent = "link to this portrait";
+          btn.append(w, p);
+          const tid = item.node.id;
+          btn.addEventListener("click", async () => { await addLink(linkParentId, tid); closeLink(); render(); });
+          linkResults.appendChild(btn);
         }
       }
+
+      function openAtlas() { atlasOverlay.classList.remove("hidden"); renderAtlas(); }
+      function closeAtlas() { atlasOverlay.classList.add("hidden"); }
+      async function renderAtlas() {
+        const subs = (await getChildren("")).filter((n) => n.kind !== "link");
+        subs.sort(compareByMass);
+        atlasResults.innerHTML = "";
+        if (!subs.length) { const m = document.createElement("div"); m.className = "emptyMsg"; m.textContent = "No portraits yet."; atlasResults.appendChild(m); return; }
+        for (const s of subs) {
+          const b = document.createElement("button"); b.type = "button"; b.className = "word " + sizeClass(mass(s)); b.textContent = s.term;
+          b.addEventListener("click", () => { closeAtlas(); pushTo(s.id); });
+          atlasResults.appendChild(b);
+        }
+          }
       function bindEvents() {
         backBtn.addEventListener("click", async () => {
           if (selectMode) { exitSelectMode(); return; }
           if (!searchOverlay.classList.contains("hidden")) { closeSearch(); return; }
+          if (!linkOverlay.classList.contains("hidden")) { closeLink(); return; }
+          if (!moveOverlay.classList.contains("hidden")) { closeMove(); return; }
+          if (!atlasOverlay.classList.contains("hidden")) { closeAtlas(); return; }
           if (!state.currentId) return;
           if (currentDepth > 0) { history.back(); return; }
-          const node = await get(state.currentId);
-          replaceTo(node ? node.parentId : "");
+          pushTo("");
         });
-
-        homeBtn.addEventListener("click", () => { pushTo(""); });
-
+        homeBtn.addEventListener("click", () => pushTo(""));
+        atlasBtn.addEventListener("click", openAtlas);
+        atlasCloseBtn.addEventListener("click", closeAtlas);
         searchBtn.addEventListener("click", openSearch);
         closeSearchBtn.addEventListener("click", closeSearch);
+        searchInput.addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(runSearch, 180); });
 
-        searchInput.addEventListener("input", () => {
-          clearTimeout(searchTimer);
-          searchTimer = setTimeout(runSearch, 180);
-        });
-
-        addBtn.addEventListener("click", () => {
-          addInput.value = "";
-          addDialog.showModal();
-          setTimeout(() => addInput.focus(), 50);
-        });
-
+        addBtn.addEventListener("click", () => { addTargetId = state.currentId; addTitle.textContent = addTargetId ? "New section" : "New word"; addInput.value = ""; addDialog.showModal(); setTimeout(() => addInput.focus(), 50); });
         addCancel.addEventListener("click", () => addDialog.close());
-
-        citeFromAdd.addEventListener("click", () => {
-          addDialog.close();
-          openCitePicker();
-        });
-
-        citeCloseBtn.addEventListener("click", closeCite);
-
-        citeInput.addEventListener("input", () => {
-          clearTimeout(citeTimer);
-          citeTimer = setTimeout(renderCiteResults, 180);
-        });
-
-        addForm.addEventListener("submit", async (event) => {
-          event.preventDefault();
-          const term = normalizeTerm(addInput.value);
-          if (!term) return;
-          await addChild(term);
-          addDialog.close();
-          addInput.value = "";
+        linkFromAdd.addEventListener("click", () => { addDialog.close(); openLinkPicker(addTargetId); });
+        addForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const term = normalizeTerm(addInput.value); if (!term) return;
+          await addChild(addTargetId, term);
+          addDialog.close(); addInput.value = "";
           await render();
         });
+
+        linkCloseBtn.addEventListener("click", closeLink);
+        linkInput.addEventListener("input", () => { clearTimeout(linkTimer); linkTimer = setTimeout(renderLinkResults, 180); });
 
         renameCancel.addEventListener("click", () => renameDialog.close());
-
-        renameForm.addEventListener("submit", async (event) => {
-          event.preventDefault();
-          const term = normalizeTerm(renameInput.value);
-          if (!term || !pendingActionId) return;
+        renameForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const term = normalizeTerm(renameInput.value); if (!term || !pendingActionId) return;
           await renameNode(pendingActionId, term);
-          renameDialog.close();
-          await render();
-          if (searchIsOpen()) await runSearch();
+          renameDialog.close(); await render();
         });
 
         deleteCancel.addEventListener("click", () => deleteDialog.close());
-
         deleteConfirm.addEventListener("click", async () => {
           deleteDialog.close();
-
           if (deleteBatch) {
             deleteBatch = false;
             const ids = Array.from(selectedIds);
             for (const id of ids) await deleteNode(id);
             const cur = await get(state.currentId);
-            if (!cur) {
-              state.currentId = "";
-              currentDepth = 0;
-              history.replaceState({ id: "", depth: 0 }, "", urlForId(""));
-            }
-            selectMode = false;
-            selectedIds = new Set();
-            updateSelBar();
-            if (searchIsOpen()) await runSearch();
-            else await render();
-            return;
+            if (!cur || cur.parentId !== "" || cur.kind === "link") { state.currentId = ""; currentDepth = 0; history.replaceState({ id: "", depth: 0 }, "", urlForId("")); }
+            selectMode = false; selectedIds = new Set(); updateSelBar();
+            await render(); return;
           }
-
           if (!pendingActionId) return;
           const doomed = pendingActionId;
           await deleteNode(doomed);
           if (selectMode && selectedIds.has(doomed)) { selectedIds.delete(doomed); updateSelBar(); }
-          const current = await get(state.currentId);
-          if (!current) replaceTo(pendingDeleteParentId || "");
+          const cur = await get(state.currentId);
+          if (!cur || cur.parentId !== "" || cur.kind === "link") pushTo("");
           else await render();
-          if (searchIsOpen()) await runSearch();
         });
 
-        actionCancel.addEventListener("click", () => actionDialog.close());
-
-        actionSelect.addEventListener("click", () => {
+        mCancel.addEventListener("click", () => actionDialog.close());
+        mOpen.addEventListener("click", async () => {
           actionDialog.close();
-          const id = pendingActionId;
-          if (!id) return;
-          enterSelectMode(id);
+          const n = await get(pendingActionId); if (!n || n.kind !== "link" || !n.targetId) return;
+          pushTo(n.targetId);
         });
-
-        actionRename.addEventListener("click", async () => {
+        mUnlink.addEventListener("click", async () => {
           actionDialog.close();
-          const node = await get(pendingActionId);
-          if (!node) return;
-          renameInput.value = node.term;
-          renameDialog.showModal();
+          const n = await get(pendingActionId); if (!n || n.kind !== "link") return;
+          await deleteNode(pendingActionId); await render();
+        });
+        mAdd.addEventListener("click", () => { actionDialog.close(); addTargetId = pendingActionId; addTitle.textContent = "New child"; addInput.value = ""; addDialog.showModal(); setTimeout(() => addInput.focus(), 50); });
+        mLink.addEventListener("click", () => { actionDialog.close(); openLinkPicker(pendingActionId); });
+        mRename.addEventListener("click", async () => {
+          actionDialog.close();
+          const n = await get(pendingActionId); if (!n || n.kind === "link") return;
+          renameInput.value = n.term; renameDialog.showModal();
           setTimeout(() => { renameInput.focus(); renameInput.select(); }, 50);
         });
-
-        actionMove.addEventListener("click", async () => {
+        mMove.addEventListener("click", async () => {
           actionDialog.close();
-          const node = await get(pendingActionId);
-          if (!node) return;
-          moveBatch = false;
-          await openMovePicker(pendingActionId);
+          const n = await get(pendingActionId); if (!n || n.kind === "link" || n.parentId === "") return;
+          moveBatch = false; await openMovePicker(pendingActionId);
         });
-
-        actionDelete.addEventListener("click", async () => {
+        mPromote.addEventListener("click", async () => {
           actionDialog.close();
-          const node = await get(pendingActionId);
-          if (!node) return;
+          const n = await get(pendingActionId); if (!n || n.kind === "link" || n.parentId === "") return;
+          await promoteNode(pendingActionId); pushTo(pendingActionId, true);
+        });
+        mDelete.addEventListener("click", async () => {
+          actionDialog.close();
+          const n = await get(pendingActionId); if (!n) return;
           deleteBatch = false;
-          pendingDeleteParentId = node.parentId || "";
-          deleteMsg.textContent = "Delete this word and everything inside it?";
+          deleteMsg.textContent = (n.childCount || 0) > 0 ? "Delete this word and everything inside it?" : "Delete this word?";
           deleteDialog.showModal();
         });
+        mSelect.addEventListener("click", () => { actionDialog.close(); if (pendingActionId) enterSelectMode(pendingActionId); });
 
         selClearBtn.addEventListener("click", () => exitSelectMode());
-
         selDeleteBtn.addEventListener("click", () => {
           if (selectedIds.size === 0) return;
           deleteBatch = true;
           const n = selectedIds.size;
-          deleteMsg.textContent = n === 1
-            ? "Delete this word and everything inside it?"
-            : "Delete " + n + " words and everything inside them?";
+          deleteMsg.textContent = n === 1 ? "Delete this word and everything inside it?" : ("Delete " + n + " words and everything inside them?");
           deleteDialog.showModal();
         });
-
         selMoveBtn.addEventListener("click", async () => {
           if (selectedIds.size === 0) return;
           moveBatch = true;
@@ -1527,64 +1069,52 @@
           movePickerId = n ? (n.parentId || "") : "";
           await renderMove();
         });
-
         moveCancelBtn.addEventListener("click", closeMove);
-
-        moveSearchInput.addEventListener("input", () => {
-          clearTimeout(moveSearchTimer);
-          moveSearchTimer = setTimeout(renderMove, 180);
-        });
-
+        moveSearchInput.addEventListener("input", () => { clearTimeout(moveTimer); moveTimer = setTimeout(renderMove, 180); });
         moveConfirmBtn.addEventListener("click", async () => {
-          const batch = moveBatch;
-          const source = moveSourceId;
-          const target = movePickerId;
+          const batch = moveBatch; const source = moveSourceId; const target = movePickerId;
           if (!batch && !source) return;
+          if (!target) { closeMove(); return; }
           if (moveExcludedSet && moveExcludedSet.has(target)) { closeMove(); return; }
           const ids = batch ? Array.from(selectedIds) : [source];
-          const wasSearch = searchIsOpen();
           closeMove();
-          if (wasSearch) closeSearch();
           for (const id of ids) {
-            const node = await get(id);
-            if (!node) continue;
+            const node = await get(id); if (!node) continue;
             if (id === target) continue;
             if ((node.parentId || "") === target) continue;
             await moveNode(id, target);
           }
-          if (batch) exitSelectMode();
-          pushTo(target, true);
+          if (batch) { selectMode = false; selectedIds = new Set(); updateSelBar(); }
+          const destRoot = await rootOf(target);
+          pushTo(destRoot || "", true);
         });
 
-        window.addEventListener("popstate", (event) => {
-          const nextId = event.state?.id ?? idFromHash();
-          currentDepth = event.state?.depth ?? 0;
+        window.addEventListener("popstate", (e) => {
+          const nextId = e.state?.id ?? idFromHash();
+          currentDepth = e.state?.depth ?? 0;
           state.currentId = nextId;
           render();
         });
-
-        document.addEventListener("keydown", (event) => {
-          if (event.key === "Escape") {
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") {
             if (selectMode) { exitSelectMode(); return; }
             if (!searchOverlay.classList.contains("hidden")) closeSearch();
+            else if (!linkOverlay.classList.contains("hidden")) closeLink();
             else if (!moveOverlay.classList.contains("hidden")) closeMove();
-            else if (!citeOverlay.classList.contains("hidden")) closeCite();
+            else if (!atlasOverlay.classList.contains("hidden")) closeAtlas();
           }
         });
       }
 
       async function init() {
-        try {
-          db = await openDB();
-        } catch (error) {
+        try { db = await openDB(); } catch (error) {
           console.error(error);
-          document.body.innerHTML =
-            '<p style="padding:2rem;font-family:sans-serif;color:#e8eaf0;">This app needs local browser storage.</p>';
+          document.body.innerHTML = '<p style="padding:2rem;font-family:sans-serif;color:#e8eaf0;">This app needs local browser storage.</p>';
           return;
         }
+        try { if (!localStorage.getItem("wc-v2-seeded")) { localStorage.removeItem(RECENTS_KEY); localStorage.setItem("wc-v2-seeded", "1"); } } catch {}
         const initialId = idFromHash();
-        currentDepth = 0;
-        state.currentId = initialId;
+        currentDepth = 0; state.currentId = initialId;
         history.replaceState({ id: initialId, depth: 0 }, "", urlForId(initialId));
         bindEvents();
         await render();
