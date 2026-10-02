@@ -201,7 +201,7 @@
   <div id="importOverlay" class="overlay hidden" role="dialog" aria-label="Import a tree">
     <header class="topbar">
       <button id="importCloseBtn" class="iconbtn" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" /></svg></button>
-      <div class="titles"><h1>Import a tree</h1><div class="path">first line = the word · # / - / ├ └ / indent = nesting · , = list</div></div>
+      <div class="titles"><h1>Import a tree</h1><div class="path">first line = the word · # / - / ├ └ / | / indent = nesting · , = list</div></div>
       <div class="iconbtn spacer" aria-hidden="true"></div>
     </header>
     <div style="padding:0.6rem 1rem 0;">
@@ -376,6 +376,7 @@
       let moveTimer = null;
       let linkTimer = null;
       let importing = false;
+      let INDENT_STEP = 2;
       function uid() {
         if (window.crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
         return "w-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
@@ -1063,6 +1064,48 @@
         }
         return root ? { root } : { error: "Couldn't read a tree from that." };
       }
+        const lines = String(raw || "").split(/\r?\n/);
+        const stack = [];
+        let root = null;
+        let seenRoot = false;
+        let count = 0;
+        const CAP = 2000;
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          if (!seenRoot) {
+            const t = stripBulletMarker(line.replace(/^\s*\d+[.)]\s+/, "")).trim() || line.trim();
+            root = { text: t, children: [] };
+            stack.push({ depth: 0, node: root });
+            seenRoot = true;
+            count++;
+            continue;
+          }
+          if (++count > CAP) return { error: "That tree is too large to import at once." };
+          const lead = countLead(line);
+          const isNumbered = /^\s*\d+[.)]\s+\S/.test(line);
+          const isBullet = /^\s*[·•\-\*]\s+\S/.test(line);
+          let depth, texts;
+          if (isNumbered) {
+            depth = 1;
+            texts = [ line.replace(/^\s*\d+[.)]\s+/, "").trim() ];
+          } else if (isBullet) {
+            depth = 2 + Math.round(lead / 2);
+            texts = splitBulletText(stripBulletMarker(line));
+          } else {
+            depth = 2 + Math.round(lead / 2);
+            texts = [ line.trim() ];
+          }
+          for (const tx of texts) {
+            if (!tx) continue;
+            const node = { text: tx, children: [] };
+            while (stack.length && stack[stack.length - 1].depth >= depth) stack.pop();
+            const parent = stack.length ? stack[stack.length - 1].node : root;
+            parent.children.push(node);
+            stack.push({ depth, node });
+          }
+        }
+        return root ? { root } : { error: "Couldn't read a tree from that." };
+      }
       function mdHashCount(line) { const m = /^\s*(#+)\s+/.exec(line); return m ? m[1].length : 0; }
       function mdIsItem(line) { return /^\s*[-*+]\s+\S/.test(line); }
       function mdClean(t) { return String(t).replace(/\*/g, "").replace(/\s+/g, " ").trim(); }
@@ -1083,6 +1126,8 @@
         const stack = [{ depth: 0, node: root }];
         let count = 1;
         const CAP = 2000;
+        let lastTableNode = null, lastTableParent = null;
+        computeIndentStep(lines);
         const pushAt = (depth, text) => {
           while (stack.length && stack[stack.length - 1].depth >= depth) stack.pop();
           const parent = stack.length ? stack[stack.length - 1].node : root;
@@ -1103,15 +1148,101 @@
             if (t) pushAt(depth, t);
             continue;
           }
+          if (isTableRow(line)) {
+            const cells = parseTableRow(line);
+            if (!cells) {
+              if (lastTableNode && lastTableParent) {
+                const arr = lastTableParent.children;
+                const idx = arr.indexOf(lastTableNode);
+                if (idx >= 0) arr.splice(idx, 1);
+                while (stack.length && stack[stack.length - 1].node === lastTableNode) stack.pop();
+                lastTableNode = null; lastTableParent = null;
+              }
+              continue;
+            }
+            while (stack.length && stack[stack.length - 1].depth >= 2) stack.pop();
+            const par = stack.length ? stack[stack.length - 1].node : root;
+            const nameNode = { text: cells[0], children: [] };
+            par.children.push(nameNode);
+            stack.push({ depth: 2, node: nameNode });
+            for (let k = 1; k < cells.length; k++) nameNode.children.push({ text: cells[k], children: [] });
+            lastTableNode = nameNode; lastTableParent = par;
+            continue;
+          }
           if (mdIsItem(line)) {
-            const depth = 2 + Math.round(countLead(line) / 2);
+            const depth = 2 + Math.round(countLead(line) / INDENT_STEP);
             const t = mdClean(line.replace(/^\s*[-*+]\s+/, ""));
             if (!t) continue;
             for (const tx of splitBulletText(t)) if (tx) pushAt(depth, tx);
             continue;
           }
           const t = mdClean(line);
-          if (t) pushAt(2 + Math.round(countLead(line) / 2), t);
+          if (t) pushAt(2 + Math.round(countLead(line) / INDENT_STEP), t);
+        }
+        return { root };
+      }
+      function isTableRow(line) {
+        return (String(line).match(/\|/g) || []).length >= 2;
+      }
+      function parseTableRow(line) {
+        const t = String(line).trim();
+        if (/^[\|\-:\s]+$/.test(t) && t.includes("-")) return null;
+        let s = t;
+        if (s.startsWith("|")) s = s.slice(1);
+        if (s.endsWith("|")) s = s.slice(0, -1);
+        const cells = s.split("|").map((c) => c.trim()).filter((c) => c.length);
+        return cells.length ? cells : null;
+      }
+      function computeIndentStep(lines) {
+        let min = Infinity;
+        for (const ln of lines) {
+          if (!ln.trim()) continue;
+          const lead = countLead(ln);
+          if (lead > 0 && lead < min) min = lead;
+        }
+        INDENT_STEP = (min === Infinity || min < 1) ? 2 : min;
+      }
+      function looksStructured(s) {
+        const lines = String(s || "").split(/\r?\n/);
+        for (const ln of lines) {
+          if (!ln.trim()) continue;
+          if (/^\s*#{1,6}\s+/.test(ln)) return true;
+          if (/^\s*\d+[.)]\s+\S/.test(ln)) return true;
+          if (/^\s*[·•\-*+]\s+\S/.test(ln)) return true;
+          if (isTableRow(ln)) return true;
+          if (countLead(ln) >= 1) return true;
+        }
+        return false;
+      }
+      function parseProse(s) {
+        const raw = String(s || "").split(/\r?\n/);
+        let rootText = "";
+        let startIdx = 0;
+        for (let i = 0; i < raw.length; i++) {
+          if (raw[i].trim()) { rootText = raw[i].trim(); startIdx = i + 1; break; }
+        }
+        if (!rootText) return { error: "Couldn't read a tree from that." };
+        const root = { text: rootText, children: [] };
+        const blocks = [];
+        let cur = [];
+        for (let i = startIdx; i < raw.length; i++) {
+          const ln = raw[i];
+          if (!ln.trim()) { if (cur.length) { blocks.push(cur.join(" ").trim()); cur = []; } continue; }
+          cur.push(ln.trim());
+        }
+        if (cur.length) blocks.push(cur.join(" ").trim());
+        const nb = blocks.filter((b) => b);
+        if (nb.length >= 2) {
+          for (const b of nb) root.children.push({ text: b, children: [] });
+        } else if (nb.length === 1) {
+          const parts = nb[0].split(/([.!?]\s+)/);
+          const facts = [];
+          for (let i = 0; i < parts.length; i += 2) {
+            const seg = ((parts[i] || "") + (parts[i + 1] || "")).trim();
+            if (seg) facts.push(seg);
+          }
+          const use = facts.length ? facts : [nb[0]];
+          for (const f of use) root.children.push({ text: f, children: [] });
         }
         return { root };
       }
@@ -1119,8 +1250,9 @@
         const s = String(raw || "");
         if (/[├└╭]/.test(s)) return parseTree(s);
         if (/(^|\n)\s*#{1,6}\s+/.test(s)) return parseMarkdown(s);
-        return parseBullets(s);
-      }
+        if (looksStructured(s)) return parseBullets(s);
+        return parseProse(s);
+    }
 
       function parseTree(raw) {
         const lines = String(raw || "").split(/\r?\n/);
