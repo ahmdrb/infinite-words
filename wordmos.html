@@ -1876,6 +1876,7 @@
             const cur = await get(state.currentId);
             if (!cur || cur.parentId !== "" || cur.kind === "link") { state.currentId = ""; currentDepth = 0; history.replaceState({ id: "", depth: 0 }, "", urlForId("")); }
             selectMode = false; select
+          }
             async function init() {
         try { db = await openDB(); } catch (error) {
           console.error(error);
