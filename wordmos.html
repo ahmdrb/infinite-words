@@ -201,7 +201,7 @@
   <div id="importOverlay" class="overlay hidden" role="dialog" aria-label="Import a tree">
     <header class="topbar">
       <button id="importCloseBtn" class="iconbtn" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" /></svg></button>
-      <div class="titles"><h1>Import a tree</h1><div class="path">first line = the word · indent or ├ └ = nesting · , = list</div></div>
+      <div class="titles"><h1>Import a tree</h1><div class="path">first line = the word · # / - / ├ └ / indent = nesting · , = list</div></div>
       <div class="iconbtn spacer" aria-hidden="true"></div>
     </header>
     <div style="padding:0.6rem 1rem 0;">
@@ -1063,8 +1063,63 @@
         }
         return root ? { root } : { error: "Couldn't read a tree from that." };
       }
+      function mdHashCount(line) { const m = /^\s*(#+)\s+/.exec(line); return m ? m[1].length : 0; }
+      function mdIsItem(line) { return /^\s*[-*+]\s+\S/.test(line); }
+      function mdClean(t) { return String(t).replace(/\*/g, "").replace(/\s+/g, " ").trim(); }
+      function parseMarkdown(raw) {
+        const lines = String(raw || "").split(/\r?\n/);
+        let rootIndex = -1, rootText = "";
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].trim()) { rootIndex = i; rootText = mdClean(lines[i].replace(/^\s*#+\s+/, "")); break; }
+        }
+        if (rootIndex < 0 || !rootText) return { error: "Couldn't read a tree from that." };
+        let minHash = Infinity;
+        for (let i = rootIndex + 1; i < lines.length; i++) {
+          const h = mdHashCount(lines[i]);
+          if (h > 0 && h < minHash) minHash = h;
+        }
+        if (minHash === Infinity) minHash = 1;
+        const root = { text: rootText, children: [] };
+        const stack = [{ depth: 0, node: root }];
+        let count = 1;
+        const CAP = 2000;
+        const pushAt = (depth, text) => {
+          while (stack.length && stack[stack.length - 1].depth >= depth) stack.pop();
+          const parent = stack.length ? stack[stack.length - 1].node : root;
+          const node = { text, children: [] };
+          parent.children.push(node);
+          stack.push({ depth, node });
+        };
+        for (let i = rootIndex + 1; i < lines.length; i++) {
+          const line = lines[i];
+          if (!line.trim()) continue;
+          if (++count > CAP) return { error: "That tree is too large to import at once." };
+          const h = mdHashCount(line);
+          if (h > 0) {
+            const depth = h - minHash + 1;
+            let t = line.replace(/^\s*#+\s+/, "");
+            if (depth === 1) t = t.replace(/^\s*\d+[.)]\s+/, "");
+            t = mdClean(t);
+            if (t) pushAt(depth, t);
+            continue;
+          }
+          if (mdIsItem(line)) {
+            const depth = 2 + Math.round(countLead(line) / 2);
+            const t = mdClean(line.replace(/^\s*[-*+]\s+/, ""));
+            if (!t) continue;
+            for (const tx of splitBulletText(t)) if (tx) pushAt(depth, tx);
+            continue;
+          }
+          const t = mdClean(line);
+          if (t) pushAt(2 + Math.round(countLead(line) / 2), t);
+        }
+        return { root };
+      }
       function parseAny(raw) {
-        return /[├└╭]/.test(String(raw || "")) ? parseTree(raw) : parseBullets(raw);
+        const s = String(raw || "");
+        if (/[├└╭]/.test(s)) return parseTree(s);
+        if (/(^|\n)\s*#{1,6}\s+/.test(s)) return parseMarkdown(s);
+        return parseBullets(s);
       }
 
       function parseTree(raw) {
