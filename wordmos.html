@@ -751,7 +751,7 @@
             b.type = "button";
             b.className = "rword";
             b.textContent = w.term;
-            b.addEventListener("click", () => pushTo(w.id));
+            attachLongPress(b, w.id, () => pushTo(w.id), true);
             rec.appendChild(b);
           }
           list.appendChild(rec);
@@ -807,13 +807,13 @@
         updateSelBar();
       }
 
-      function attachLongPress(nodeEl, id, onClick) {
+      function attachLongPress(nodeEl, id, onClick, fromList) {
         let sx = 0, sy = 0;
         nodeEl.addEventListener("pointerdown", (e) => {
           if (e.pointerType === "mouse" && e.button !== 0) return;
           sx = e.clientX; sy = e.clientY; suppressClick = false;
           clearTimeout(longPressTimer);
-          longPressTimer = setTimeout(() => { suppressClick = true; openAction(id); }, 450);
+          longPressTimer = setTimeout(() => { suppressClick = true; openAction(id, fromList); }, 450);
         });
         nodeEl.addEventListener("pointermove", (e) => { if (Math.abs(e.clientX - sx) > 10 || Math.abs(e.clientY - sy) > 10) clearTimeout(longPressTimer); });
         const cancel = () => clearTimeout(longPressTimer);
@@ -827,7 +827,7 @@
         nodeEl.addEventListener("contextmenu", (e) => { e.preventDefault(); openAction(id); });
       }
 
-      async function openAction(id) {
+      async function openAction(id, fromList) {
         pendingActionId = id;
         const n = await get(id);
         let headName = "";
@@ -847,7 +847,7 @@
         show(mLink, !isLink);
         show(mUnlink, isLink);
         show(mDelete, !isLink);
-        show(mSelect, !selectMode);
+        show(mSelect, !selectMode && !fromList);
         actionDialog.showModal();
       }
 
@@ -883,7 +883,7 @@
           const p = document.createElement("span"); p.className = "resultPath"; p.textContent = "portrait";
           btn.append(w, p);
           const sid = item.node.id;
-          btn.addEventListener("click", () => { closeSearch(); pushTo(sid); });
+          attachLongPress(btn, sid, () => { closeSearch(); pushTo(sid); }, true);
           searchResults.appendChild(btn);
         }
       }
@@ -986,7 +986,7 @@
         if (!subs.length) { const m = document.createElement("div"); m.className = "emptyMsg"; m.textContent = "No portraits yet."; atlasResults.appendChild(m); return; }
         for (const s of subs) {
           const b = document.createElement("button"); b.type = "button"; b.className = "word " + sizeClass(mass(s)); b.textContent = s.term;
-          b.addEventListener("click", () => { closeAtlas(); pushTo(s.id); });
+          attachLongPress(b, s.id, () => { closeAtlas(); pushTo(s.id); }, true);
           atlasResults.appendChild(b);
         }
           }
@@ -1127,6 +1127,8 @@
           const term = normalizeTerm(renameInput.value); if (!term || !pendingActionId) return;
           await renameNode(pendingActionId, term);
           renameDialog.close(); await render();
+          if (searchIsOpen()) await runSearch();
+          if (!atlasOverlay.classList.contains("hidden")) await renderAtlas();
         });
 
         deleteCancel.addEventListener("click", () => deleteDialog.close());
@@ -1139,7 +1141,10 @@
             const cur = await get(state.currentId);
             if (!cur || cur.parentId !== "" || cur.kind === "link") { state.currentId = ""; currentDepth = 0; history.replaceState({ id: "", depth: 0 }, "", urlForId("")); }
             selectMode = false; selectedIds = new Set(); updateSelBar();
-            await render(); return;
+            await render();
+            if (searchIsOpen()) await runSearch();
+            if (!atlasOverlay.classList.contains("hidden")) await renderAtlas();
+            return;
           }
           if (!pendingActionId) return;
           const doomed = pendingActionId;
@@ -1148,6 +1153,8 @@
           const cur = await get(state.currentId);
           if (!cur || cur.parentId !== "" || cur.kind === "link") pushTo("");
           else await render();
+          if (searchIsOpen()) await runSearch();
+          if (!atlasOverlay.classList.contains("hidden")) await renderAtlas();
         });
 
         mCancel.addEventListener("click", () => actionDialog.close());
