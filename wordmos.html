@@ -357,6 +357,31 @@
   </dialog>
 
   <script>
+  (function () {
+    function paint(title, msg, file, line, col) {
+      try {
+        var d = document.createElement("div");
+        d.setAttribute("style", "position:fixed;inset:0;z-index:9999;background:#07080c;color:#ff6b6b;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;padding:1rem;overflow:auto;white-space:pre-wrap;");
+        d.textContent = "COSMOS DIAGNOSTIC — " + title + "\n\n" +
+          (msg || "(no message)") + "\n\n" +
+          "file: " + (file || "?") + "\n" +
+          "line: " + (line || "?") + "   col: " + (col || "?") + "\n\n" +
+          "Screenshot this whole box and send it to Qwen.\n\n" +
+          "Your words are SAFE — this is a code/shell problem, not data loss.";
+        if (document.body) document.body.appendChild(d);
+        else document.addEventListener("DOMContentLoaded", function () { document.body.appendChild(d); });
+      } catch (_) {}
+    }
+    window.addEventListener("error", function (e) {
+      paint("error", e && e.message, e && e.filename, e && e.lineno, e && e.colno);
+    });
+    window.addEventListener("unhandledrejection", function (e) {
+      var r = e && e.reason;
+      paint("promise", (r && r.message) || String(r), r && r.fileName, r && r.lineNumber, r && r.columnNumber);
+    });
+  })();
+            </script>
+  <script>
     (() => {
       "use strict";
 
