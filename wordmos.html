@@ -75,6 +75,9 @@
     .rlabel { color: var(--muted); font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 0.35rem; }
     .rword { background: none; border: 0; color: var(--text); font: inherit; font-size: 1.04rem; padding: 0.34rem 0.6rem; cursor: pointer; border-radius: 10px; }
     .rword:active { background: rgba(255,255,255,0.06); }
+    .homefoot { width: 100%; max-width: 32rem; margin: 2.4rem auto 0; padding: 0 0.5rem 1rem; display: flex; justify-content: center; gap: 1.4rem; }
+    .hflink { background: none; border: 0; color: var(--muted); font: inherit; font-size: 0.82rem; letter-spacing: 0.02em; cursor: pointer; padding: 0.4rem 0.2rem; text-decoration: underline; text-underline-offset: 3px; }
+    .hflink:active { color: var(--accent); }
     .selbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1rem calc(0.7rem + env(safe-area-inset-bottom)); background: rgba(7,8,12,0.94); backdrop-filter: blur(12px); border-top: 1px solid rgba(255,255,255,0.08); }
     .selbar .selcount { flex: 1; min-width: 0; font-size: 0.88rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .selbar button { border: 0; border-radius: 14px; padding: 0.7rem 0.9rem; font: inherit; cursor: pointer; flex: 0 0 auto; }
@@ -94,10 +97,6 @@
     .searchwrap { flex: 1; min-width: 0; }
     input[type="text"], input[type="search"] { width: 100%; padding: 0.75rem 0.9rem; border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; background: #0d1017; color: var(--text); font: inherit; outline: none; }
     input[type="text"]:focus, input[type="search"]:focus { border-color: var(--accent); }
-    textarea { width: 100%; padding: 0.75rem 0.9rem; border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; background: #0d1017; color: var(--text); font: inherit; font-family: inherit; outline: none; resize: vertical; min-height: 5.2rem; line-height: 1.5; }
-    textarea:focus { border-color: var(--accent); }
-    .importstatus { min-height: 1.1rem; margin-top: 0.5rem; font-size: 0.82rem; color: var(--muted); text-align: center; }
-    .importstatus.err { color: var(--danger); }
     .result { display: block; width: 100%; padding: 0.55rem 0; border: 0; background: none; text-align: left; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
     .result .word { display: inline-block; width: auto; padding: 0; }
     .resultPath { display: block; margin-top: 0.15rem; color: var(--muted); font-size: 0.76rem; overflow-wrap: anywhere; }
@@ -105,6 +104,33 @@
     .createRow:active { opacity: 0.7; }
     .citeEntryBtn { width: 100%; margin-top: 0.55rem; border: 0; background: none; color: var(--muted); font: inherit; font-size: 0.9rem; text-align: center; cursor: pointer; padding: 0.45rem; }
     .citeEntryBtn:active { opacity: 0.7; }
+    .mediaDoor { flex: 0 0 auto; margin-left: 0.45rem; display: inline-flex; align-items: center; color: var(--muted); cursor: pointer; position: relative; }
+    .mediaDoor svg { width: 15px; height: 15px; stroke-width: 2; }
+    .mediaDoor:active { color: var(--accent); }
+    .mediaDoor .mdcount { position: absolute; top: -3px; right: -7px; font-style: normal; font-size: 0.58rem; color: var(--accent); font-weight: 700; }
+    .mmrow { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .mmkind { flex: 0 0 auto; font-size: 0.64rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 0.12rem 0.4rem; }
+    .mmurl { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); font-size: 0.86rem; }
+    .mmopen, .mmrm { flex: 0 0 auto; border: 0; border-radius: 12px; padding: 0.5rem 0.7rem; font: inherit; font-size: 0.85rem; cursor: pointer; }
+    .mmopen { background: var(--accent); color: #07080c; font-weight: 650; }
+    .mmrm { background: rgba(255,255,255,0.08); color: var(--danger); }
+    .mmstatus { min-height: 1rem; margin-top: 0.4rem; font-size: 0.8rem; color: var(--muted); text-align: center; }
+    .mmstatus.err { color: var(--danger); }
+    .importstatus { min-height: 1.1rem; margin-top: 0.5rem; font-size: 0.82rem; color: var(--muted); text-align: center; }
+    .importstatus.err { color: var(--danger); }
+    textarea { width: 100%; padding: 0.75rem 0.9rem; border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; background: #0d1017; color: var(--text); font: inherit; font-family: inherit; outline: none; resize: vertical; min-height: 5.2rem; line-height: 1.5; }
+    textarea:focus { border-color: var(--accent); }
+    textarea.codebox { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.74rem; min-height: 9rem; color: var(--muted); }
+    .statline { padding: 0.7rem 1rem 0.2rem; text-align: center; color: var(--text); font-size: 0.92rem; }
+    .statline.sub { color: var(--muted); font-size: 0.82rem; }
+    .filebtn { display: block; width: calc(100% - 2rem); margin: 0.6rem 1rem 0; padding: 0.8rem; border: 1px dashed rgba(255,255,255,0.18); border-radius: 14px; background: #0d1017; color: var(--text); font: inherit; text-align: center; cursor: pointer; }
+    .filebtn:active { border-color: var(--accent); }
+    .undoBar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex; align-items: center; gap: 0.6rem; padding: 0.7rem 1rem calc(0.7rem + env(safe-area-inset-bottom)); background: rgba(16,18,24,0.97); backdrop-filter: blur(12px); border-top: 1px solid rgba(138,180,248,0.3); }
+    .undoBar .undotext { flex: 1; min-width: 0; font-size: 0.86rem; color: var(--text); }
+    .undoBar .undosub { display: block; font-size: 0.72rem; color: var(--muted); }
+    .undoBar button { border: 0; border-radius: 12px; padding: 0.55rem 0.8rem; font: inherit; font-size: 0.85rem; cursor: pointer; flex: 0 0 auto; }
+    .undoBar .undoact { background: var(--accent); color: #07080c; font-weight: 650; }
+    .undoBar .undodis { background: rgba(255,255,255,0.08); color: var(--muted); }
     dialog { width: min(92vw, 360px); padding: 1rem; border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; background: var(--surface); color: var(--text); box-shadow: 0 20px 60px rgba(0,0,0,0.45); }
     dialog::backdrop { background: rgba(0,0,0,0.58); }
     dialog h2 { margin: 0 0 0.85rem; font-size: 1rem; font-weight: 650; }
@@ -154,6 +180,12 @@
       <button type="button" id="selClearBtn" class="selghost">Clear</button>
       <button type="button" id="selMoveBtn" class="selprimary" disabled>Move</button>
       <button type="button" id="selDeleteBtn" class="seldanger" disabled>Delete</button>
+    </div>
+
+    <div id="undoBar" class="undoBar hidden">
+      <span class="undotext">Library restored from backup<span id="undoStatus" class="undosub"></span></span>
+      <button type="button" id="undoBtn" class="undoact">Undo</button>
+      <button type="button" id="undoDismiss" class="undodis">Done</button>
     </div>
   </div>
 
@@ -214,6 +246,67 @@
     </div>
   </div>
 
+  <div id="mediaOverlay" class="overlay hidden" role="dialog" aria-label="Media doors">
+    <header class="topbar">
+      <button id="mmClose" class="iconbtn" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" /></svg></button>
+      <div class="titles"><h1 id="mmTitle">Media</h1><div class="path">doors on this word</div></div>
+      <div class="iconbtn spacer" aria-hidden="true"></div>
+    </header>
+    <main id="mmList" class="list"></main>
+    <div style="padding:0 1rem 0.4rem;"><input id="mmInput" type="text" placeholder="Paste a link (image / video / audio / page)…" autocomplete="off" spellcheck="false" /><div id="mmStatus" class="mmstatus"></div></div>
+    <div class="movebar">
+      <button type="button" id="mmCancel" class="ghostbtn">Close</button>
+      <button type="button" id="mmAdd" class="primarybtn">Add door</button>
+    </div>
+  </div>
+
+  <div id="exportOverlay" class="overlay hidden" role="dialog" aria-label="Export backup">
+    <header class="topbar">
+      <button id="exportCloseBtn" class="iconbtn" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" /></svg></button>
+      <div class="titles"><h1>Export backup</h1><div class="path">one file = your whole cosmos</div></div>
+      <div class="iconbtn spacer" aria-hidden="true"></div>
+    </header>
+    <div id="exportStats" class="statline"></div>
+    <div style="padding:0.4rem 1rem 0;"><textarea id="exportData" class="codebox" rows="8" readonly spellcheck="false"></textarea><div id="exportStatus" class="mmstatus"></div></div>
+    <div class="movebar">
+      <button type="button" id="exportCopyBtn" class="ghostbtn">Copy</button>
+      <button type="button" id="exportShareBtn" class="ghostbtn">Share</button>
+      <button type="button" id="exportDownloadBtn" class="primarybtn">Download file</button>
+    </div>
+  </div>
+
+  <div id="importSrcOverlay" class="overlay hidden" role="dialog" aria-label="Import backup">
+    <header class="topbar">
+      <button id="importSrcCloseBtn" class="iconbtn" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" /></svg></button>
+      <div class="titles"><h1>Import backup</h1><div class="path">choose a file, or paste its text</div></div>
+      <div class="iconbtn spacer" aria-hidden="true"></div>
+    </header>
+    <input type="file" id="importFile" accept=".json,application/json" class="hidden" />
+    <button type="button" id="importFileBtn" class="filebtn">Choose a backup file…</button>
+    <div style="padding:0.7rem 1rem 0;text-align:center;color:var(--muted);font-size:0.8rem;">— or paste the backup text —</div>
+    <div style="padding:0.4rem 1rem 0;"><textarea id="importSrcInput" rows="6" placeholder="Paste cosmos-backup JSON here…" autocomplete="off" spellcheck="false"></textarea><div id="importSrcStatus" class="mmstatus"></div></div>
+    <div class="movebar">
+      <button type="button" id="importSrcCancelBtn" class="ghostbtn">Cancel</button>
+      <button type="button" id="importSrcLoadBtn" class="primarybtn">Check &amp; continue</button>
+    </div>
+  </div>
+
+  <div id="confirmOverlay" class="overlay hidden" role="dialog" aria-label="Confirm restore">
+    <header class="topbar">
+      <button id="confirmCloseBtn" class="iconbtn" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" /></svg></button>
+      <div class="titles"><h1>Restore this backup?</h1><div class="path">this replaces your entire library</div></div>
+      <div class="iconbtn spacer" aria-hidden="true"></div>
+    </header>
+    <div id="confirmStats" class="statline"></div>
+    <div id="confirmCurrent" class="statline sub"></div>
+    <div style="padding:0.6rem 1.2rem;color:var(--muted);font-size:0.86rem;line-height:1.5;text-align:center;">Tip: save your current library first, so even this replace is reversible from a file.</div>
+    <div id="confirmStatus" class="mmstatus"></div>
+    <div class="movebar">
+      <button type="button" id="confirmSaveFirstBtn" class="ghostbtn">Save current first</button>
+      <button type="button" id="confirmReplaceBtn" class="primarybtn">Replace library</button>
+    </div>
+  </div>
+
   <dialog id="addDialog">
     <form id="addForm">
       <h2 id="addTitle">New word</h2>
@@ -258,6 +351,7 @@
       <button type="button" id="mUnlink">Unlink</button>
       <button type="button" id="mDelete" class="danger">Delete</button>
       <button type="button" id="mSelect">Select</button>
+      <button type="button" id="mMedia">Attach media…</button>
       <button type="button" id="mCancel">Cancel</button>
     </menu>
   </dialog>
@@ -278,6 +372,7 @@
       const backBtn = el("backBtn");
       const atlasBtn = el("atlasBtn");
       const searchBtn = el("searchBtn");
+      const importBtn = el("importBtn");
       const addBtn = el("addBtn");
       const screenTitle = el("screenTitle");
       const screenPath = el("screenPath");
@@ -305,13 +400,52 @@
       const atlasCloseBtn = el("atlasCloseBtn");
       const atlasResults = el("atlasResults");
 
-      const importBtn = el("importBtn");
       const importOverlay = el("importOverlay");
       const importCloseBtn = el("importCloseBtn");
       const importCancelBtn = el("importCancelBtn");
       const importBuildBtn = el("importBuildBtn");
       const importInput = el("importInput");
       const importStatus = el("importStatus");
+
+      const mediaOverlay = el("mediaOverlay");
+      const mmClose = el("mmClose");
+      const mmTitle = el("mmTitle");
+      const mmList = el("mmList");
+      const mmInput = el("mmInput");
+      const mmStatus = el("mmStatus");
+      const mmCancel = el("mmCancel");
+      const mmAdd = el("mmAdd");
+
+      const exportOverlay = el("exportOverlay");
+      const exportCloseBtn = el("exportCloseBtn");
+      const exportStats = el("exportStats");
+      const exportData = el("exportData");
+      const exportStatus = el("exportStatus");
+      const exportCopyBtn = el("exportCopyBtn");
+      const exportShareBtn = el("exportShareBtn");
+      const exportDownloadBtn = el("exportDownloadBtn");
+
+      const importSrcOverlay = el("importSrcOverlay");
+      const importSrcCloseBtn = el("importSrcCloseBtn");
+      const importSrcCancelBtn = el("importSrcCancelBtn");
+      const importSrcLoadBtn = el("importSrcLoadBtn");
+      const importSrcInput = el("importSrcInput");
+      const importSrcStatus = el("importSrcStatus");
+      const importFile = el("importFile");
+      const importFileBtn = el("importFileBtn");
+
+      const confirmOverlay = el("confirmOverlay");
+      const confirmCloseBtn = el("confirmCloseBtn");
+      const confirmStats = el("confirmStats");
+      const confirmCurrent = el("confirmCurrent");
+      const confirmStatus = el("confirmStatus");
+      const confirmSaveFirstBtn = el("confirmSaveFirstBtn");
+      const confirmReplaceBtn = el("confirmReplaceBtn");
+
+      const undoBar = el("undoBar");
+      const undoBtn = el("undoBtn");
+      const undoDismiss = el("undoDismiss");
+      const undoStatus = el("undoStatus");
 
       const selBar = el("selBar");
       const selCount = el("selCount");
@@ -337,6 +471,7 @@
       const deleteConfirm = el("deleteConfirm");
 
       const actionDialog = el("actionDialog");
+      const actionHead = el("actionHead");
       const mOpen = el("mOpen");
       const mAdd = el("mAdd");
       const mRename = el("mRename");
@@ -346,8 +481,8 @@
       const mUnlink = el("mUnlink");
       const mDelete = el("mDelete");
       const mSelect = el("mSelect");
+      const mMedia = el("mMedia");
       const mCancel = el("mCancel");
-      const actionHead = el("actionHead");
 
       let db = null;
       const state = { currentId: "" };
@@ -377,6 +512,12 @@
       let linkTimer = null;
       let importing = false;
       let INDENT_STEP = 2;
+
+      let mediaTargetId = "";
+
+      let undoNodes = null;
+      let undoRecents = null;
+      let confirmData = null;
       function uid() {
         if (window.crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
         return "w-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
@@ -535,7 +676,7 @@
           };
           req.onerror = () => { out.sort(compareResults); res(out.slice(0, 60)); };
         });
-      }
+            }
       async function addChild(parentId, rawTerm) {
         const term = normalizeTerm(rawTerm); if (!term) return "";
         const now = Date.now();
@@ -639,6 +780,7 @@
           if (kept.length !== arr.length) setRecents(kept);
         } catch {}
       }
+
       function indentFor(level) { const l = Math.min(level, 5); return (0.35 + (l - 1) * 0.85).toFixed(2) + "rem"; }
 
       async function buildRows(nodes, level, container) {
@@ -676,6 +818,9 @@
           }
           row.appendChild(txt);
 
+          const _doors = node.media || [];
+          if (_doors.length) row.appendChild(makeDoorGlyph(node.id, _doors.length));
+
           const nid = node.id;
           const nlink = isLink ? (node.targetId || "") : "";
           const nkids = hasKids;
@@ -705,6 +850,8 @@
         if (!root || root.parentId !== "" || root.kind === "link") { pushTo(""); return; }
 
         screenTitle.textContent = root.term;
+        const _rdoors = root.media || [];
+        if (_rdoors.length) screenTitle.appendChild(makeDoorGlyph(rootId, _rdoors.length));
         screenPath.textContent = "";
         attachLongPress(screenTitle, rootId, () => {});
 
@@ -765,6 +912,17 @@
           }
           list.appendChild(rec);
         }
+
+        const foot = document.createElement("div");
+        foot.className = "homefoot";
+        const eb = document.createElement("button");
+        eb.type = "button"; eb.className = "hflink"; eb.textContent = "Export backup";
+        eb.addEventListener("click", openExport);
+        const ib = document.createElement("button");
+        ib.type = "button"; ib.className = "hflink"; ib.textContent = "Import backup";
+        ib.addEventListener("click", openImportSrc);
+        foot.append(eb, ib);
+        list.appendChild(foot);
       }
 
       async function render() {
@@ -800,7 +958,7 @@
       }
 
       function updateSelBar() {
-        const busy = !moveOverlay.classList.contains("hidden") || !linkOverlay.classList.contains("hidden") || !atlasOverlay.classList.contains("hidden");
+        const busy = !moveOverlay.classList.contains("hidden") || !linkOverlay.classList.contains("hidden") || !atlasOverlay.classList.contains("hidden") || !mediaOverlay.classList.contains("hidden") || !exportOverlay.classList.contains("hidden") || !importSrcOverlay.classList.contains("hidden") || !confirmOverlay.classList.contains("hidden");
         if (!selectMode || busy) { selBar.classList.add("hidden"); return; }
         selBar.classList.remove("hidden");
         const n = selectedIds.size;
@@ -833,7 +991,7 @@
           if (suppressClick) { suppressClick = false; e.preventDefault(); e.stopPropagation(); return; }
           if (onClick) onClick(e);
         });
-        nodeEl.addEventListener("contextmenu", (e) => { e.preventDefault(); openAction(id); });
+        nodeEl.addEventListener("contextmenu", (e) => { e.preventDefault(); openAction(id, fromList); });
       }
 
       async function openAction(id, fromList) {
@@ -857,6 +1015,7 @@
         show(mUnlink, isLink);
         show(mDelete, !isLink);
         show(mSelect, !selectMode && !fromList);
+        show(mMedia, !isLink);
         actionDialog.showModal();
       }
 
@@ -999,13 +1158,70 @@
           atlasResults.appendChild(b);
         }
           }
-      function stripConnector(line, ci) {
-        return line.slice(ci).replace(/^[├└╭+|][─╴\-]+\s*/, "").trim();
+      function isTableRow(line) {
+        return (String(line).match(/\|/g) || []).length >= 2;
       }
-      function stripLeadNum(s) {
-        const t = String(s || "");
-        const stripped = t.replace(/^\s*\d+[.)]\s+/, "").trim();
-        return stripped || t.trim();
+      function parseTableRow(line) {
+        const t = String(line).trim();
+        if (/^[\|\-:\s]+$/.test(t) && t.includes("-")) return null;
+        let s = t;
+        if (s.startsWith("|")) s = s.slice(1);
+        if (s.endsWith("|")) s = s.slice(0, -1);
+        const cells = s.split("|").map((c) => c.trim()).filter((c) => c.length);
+        return cells.length ? cells : null;
+      }
+      function computeIndentStep(lines) {
+        let min = Infinity;
+        for (const ln of lines) {
+          if (!ln.trim()) continue;
+          const lead = countLead(ln);
+          if (lead > 0 && lead < min) min = lead;
+        }
+        INDENT_STEP = (min === Infinity || min < 1) ? 2 : min;
+      }
+      function looksStructured(s) {
+        const lines = String(s || "").split(/\r?\n/);
+        for (const ln of lines) {
+          if (!ln.trim()) continue;
+          if (/^\s*#{1,6}\s+/.test(ln)) return true;
+          if (/^\s*\d+[.)]\s+\S/.test(ln)) return true;
+          if (/^\s*[·•\-*+]\s+\S/.test(ln)) return true;
+          if (isTableRow(ln)) return true;
+          if (countLead(ln) >= 1) return true;
+        }
+        return false;
+      }
+      function parseProse(s) {
+        const raw = String(s || "").split(/\r?\n/);
+        let rootText = "";
+        let startIdx = 0;
+        for (let i = 0; i < raw.length; i++) {
+          if (raw[i].trim()) { rootText = raw[i].trim(); startIdx = i + 1; break; }
+        }
+        if (!rootText) return { error: "Couldn't read a tree from that." };
+        const root = { text: rootText, children: [] };
+        const blocks = [];
+        let cur = [];
+        for (let i = startIdx; i < raw.length; i++) {
+          const ln = raw[i];
+          if (!ln.trim()) { if (cur.length) { blocks.push(cur.join(" ").trim()); cur = []; } continue; }
+          cur.push(ln.trim());
+        }
+        if (cur.length) blocks.push(cur.join(" ").trim());
+        const nb = blocks.filter((b) => b);
+        if (nb.length >= 2) {
+          for (const b of nb) root.children.push({ text: b, children: [] });
+        } else if (nb.length === 1) {
+          const parts = nb[0].split(/([.!?]\s+)/);
+          const facts = [];
+          for (let i = 0; i < parts.length; i += 2) {
+            const seg = ((parts[i] || "") + (parts[i + 1] || "")).trim();
+            if (seg) facts.push(seg);
+          }
+          const use = facts.length ? facts : [nb[0]];
+          for (const f of use) root.children.push({ text: f, children: [] });
+        }
+        return { root };
       }
       function countLead(line) {
         const m = /^[ \t]*/.exec(line)[0];
@@ -1021,6 +1237,46 @@
         const parts = t.split(",").map((x) => x.trim()).filter(Boolean);
         return parts.length ? parts : [t];
       }
+      function mdHashCount(line) { const m = /^\s*(#+)\s+/.exec(line); return m ? m[1].length : 0; }
+      function mdIsItem(line) { return /^\s*[-*+]\s+\S/.test(line); }
+      function mdClean(t) { return String(t).replace(/\*/g, "").replace(/\s+/g, " ").trim(); }
+      function stripConnector(line, ci) {
+        return line.slice(ci).replace(/^[├└╭+|][─╴\-]+\s*/, "").trim();
+      }
+      function stripLeadNum(s) {
+        const t = String(s || "");
+        const stripped = t.replace(/^\s*\d+[.)]\s+/, "").trim();
+        return stripped || t.trim();
+      }
+      function parseTree(raw) {
+        const lines = String(raw || "").split(/\r?\n/);
+        const stack = [];
+        let root = null;
+        let count = 0;
+        const CAP = 2000;
+        for (const line of lines) {
+          const ci = line.search(/[├└╰╭+|][─╴\-]+/);
+          let col, text;
+          if (ci >= 0) {
+            col = ci;
+            text = stripConnector(line, ci);
+          } else {
+            const bare = line.replace(/[│┃╏┆|─╴\-\s]/g, "");
+            if (!bare) continue;
+            if (!root) { col = -1; text = bare; }
+            else { col = (stack.length ? stack[stack.length - 1].col : -1) + 1; text = bare; }
+          }
+          if (!text) continue;
+          if (++count > CAP) return { error: "That tree is too large to import at once." };
+          const node = { text, children: [] };
+          if (!root) { root = node; stack.push({ col: -1, node }); continue; }
+          while (stack.length && stack[stack.length - 1].col >= col) stack.pop();
+          const parent = stack.length ? stack[stack.length - 1].node : root;
+          parent.children.push(node);
+          stack.push({ col, node });
+        }
+        return root ? { root } : { error: "Couldn't read a tree from that." };
+      }
       function parseBullets(raw) {
         const lines = String(raw || "").split(/\r?\n/);
         const stack = [];
@@ -1028,6 +1284,8 @@
         let seenRoot = false;
         let count = 0;
         const CAP = 2000;
+        let lastTableNode = null, lastTableParent = null;
+        computeIndentStep(lines);
         for (const line of lines) {
           if (!line.trim()) continue;
           if (!seenRoot) {
@@ -1039,6 +1297,27 @@
             continue;
           }
           if (++count > CAP) return { error: "That tree is too large to import at once." };
+          if (isTableRow(line)) {
+            const cells = parseTableRow(line);
+            if (!cells) {
+              if (lastTableNode && lastTableParent) {
+                const arr = lastTableParent.children;
+                const idx = arr.indexOf(lastTableNode);
+                if (idx >= 0) arr.splice(idx, 1);
+                while (stack.length && stack[stack.length - 1].node === lastTableNode) stack.pop();
+                lastTableNode = null; lastTableParent = null;
+              }
+              continue;
+            }
+            while (stack.length && stack[stack.length - 1].depth >= 2) stack.pop();
+            const par = stack.length ? stack[stack.length - 1].node : root;
+            const nameNode = { text: cells[0], children: [] };
+            par.children.push(nameNode);
+            stack.push({ depth: 2, node: nameNode });
+            for (let k = 1; k < cells.length; k++) nameNode.children.push({ text: cells[k], children: [] });
+            lastTableNode = nameNode; lastTableParent = par;
+            continue;
+          }
           const lead = countLead(line);
           const isNumbered = /^\s*\d+[.)]\s+\S/.test(line);
           const isBullet = /^\s*[·•\-\*]\s+\S/.test(line);
@@ -1047,10 +1326,10 @@
             depth = 1;
             texts = [ line.replace(/^\s*\d+[.)]\s+/, "").trim() ];
           } else if (isBullet) {
-            depth = 2 + Math.round(lead / 2);
+            depth = 2 + Math.round(lead / INDENT_STEP);
             texts = splitBulletText(stripBulletMarker(line));
           } else {
-            depth = 2 + Math.round(lead / 2);
+            depth = 2 + Math.round(lead / INDENT_STEP);
             texts = [ line.trim() ];
           }
           for (const tx of texts) {
@@ -1064,51 +1343,6 @@
         }
         return root ? { root } : { error: "Couldn't read a tree from that." };
       }
-        const lines = String(raw || "").split(/\r?\n/);
-        const stack = [];
-        let root = null;
-        let seenRoot = false;
-        let count = 0;
-        const CAP = 2000;
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          if (!seenRoot) {
-            const t = stripBulletMarker(line.replace(/^\s*\d+[.)]\s+/, "")).trim() || line.trim();
-            root = { text: t, children: [] };
-            stack.push({ depth: 0, node: root });
-            seenRoot = true;
-            count++;
-            continue;
-          }
-          if (++count > CAP) return { error: "That tree is too large to import at once." };
-          const lead = countLead(line);
-          const isNumbered = /^\s*\d+[.)]\s+\S/.test(line);
-          const isBullet = /^\s*[·•\-\*]\s+\S/.test(line);
-          let depth, texts;
-          if (isNumbered) {
-            depth = 1;
-            texts = [ line.replace(/^\s*\d+[.)]\s+/, "").trim() ];
-          } else if (isBullet) {
-            depth = 2 + Math.round(lead / 2);
-            texts = splitBulletText(stripBulletMarker(line));
-          } else {
-            depth = 2 + Math.round(lead / 2);
-            texts = [ line.trim() ];
-          }
-          for (const tx of texts) {
-            if (!tx) continue;
-            const node = { text: tx, children: [] };
-            while (stack.length && stack[stack.length - 1].depth >= depth) stack.pop();
-            const parent = stack.length ? stack[stack.length - 1].node : root;
-            parent.children.push(node);
-            stack.push({ depth, node });
-          }
-        }
-        return root ? { root } : { error: "Couldn't read a tree from that." };
-      }
-      function mdHashCount(line) { const m = /^\s*(#+)\s+/.exec(line); return m ? m[1].length : 0; }
-      function mdIsItem(line) { return /^\s*[-*+]\s+\S/.test(line); }
-      function mdClean(t) { return String(t).replace(/\*/g, "").replace(/\s+/g, " ").trim(); }
       function parseMarkdown(raw) {
         const lines = String(raw || "").split(/\r?\n/);
         let rootIndex = -1, rootText = "";
@@ -1181,107 +1415,12 @@
         }
         return { root };
       }
-      function isTableRow(line) {
-        return (String(line).match(/\|/g) || []).length >= 2;
-      }
-      function parseTableRow(line) {
-        const t = String(line).trim();
-        if (/^[\|\-:\s]+$/.test(t) && t.includes("-")) return null;
-        let s = t;
-        if (s.startsWith("|")) s = s.slice(1);
-        if (s.endsWith("|")) s = s.slice(0, -1);
-        const cells = s.split("|").map((c) => c.trim()).filter((c) => c.length);
-        return cells.length ? cells : null;
-      }
-      function computeIndentStep(lines) {
-        let min = Infinity;
-        for (const ln of lines) {
-          if (!ln.trim()) continue;
-          const lead = countLead(ln);
-          if (lead > 0 && lead < min) min = lead;
-        }
-        INDENT_STEP = (min === Infinity || min < 1) ? 2 : min;
-      }
-      function looksStructured(s) {
-        const lines = String(s || "").split(/\r?\n/);
-        for (const ln of lines) {
-          if (!ln.trim()) continue;
-          if (/^\s*#{1,6}\s+/.test(ln)) return true;
-          if (/^\s*\d+[.)]\s+\S/.test(ln)) return true;
-          if (/^\s*[·•\-*+]\s+\S/.test(ln)) return true;
-          if (isTableRow(ln)) return true;
-          if (countLead(ln) >= 1) return true;
-        }
-        return false;
-      }
-      function parseProse(s) {
-        const raw = String(s || "").split(/\r?\n/);
-        let rootText = "";
-        let startIdx = 0;
-        for (let i = 0; i < raw.length; i++) {
-          if (raw[i].trim()) { rootText = raw[i].trim(); startIdx = i + 1; break; }
-        }
-        if (!rootText) return { error: "Couldn't read a tree from that." };
-        const root = { text: rootText, children: [] };
-        const blocks = [];
-        let cur = [];
-        for (let i = startIdx; i < raw.length; i++) {
-          const ln = raw[i];
-          if (!ln.trim()) { if (cur.length) { blocks.push(cur.join(" ").trim()); cur = []; } continue; }
-          cur.push(ln.trim());
-        }
-        if (cur.length) blocks.push(cur.join(" ").trim());
-        const nb = blocks.filter((b) => b);
-        if (nb.length >= 2) {
-          for (const b of nb) root.children.push({ text: b, children: [] });
-        } else if (nb.length === 1) {
-          const parts = nb[0].split(/([.!?]\s+)/);
-          const facts = [];
-          for (let i = 0; i < parts.length; i += 2) {
-            const seg = ((parts[i] || "") + (parts[i + 1] || "")).trim();
-            if (seg) facts.push(seg);
-          }
-          const use = facts.length ? facts : [nb[0]];
-          for (const f of use) root.children.push({ text: f, children: [] });
-        }
-        return { root };
-      }
       function parseAny(raw) {
         const s = String(raw || "");
         if (/[├└╭]/.test(s)) return parseTree(s);
         if (/(^|\n)\s*#{1,6}\s+/.test(s)) return parseMarkdown(s);
         if (looksStructured(s)) return parseBullets(s);
         return parseProse(s);
-    }
-
-      function parseTree(raw) {
-        const lines = String(raw || "").split(/\r?\n/);
-        const stack = [];
-        let root = null;
-        let count = 0;
-        const CAP = 2000;
-        for (const line of lines) {
-          const ci = line.search(/[├└╰╭+|][─╴\-]+/);
-          let col, text;
-          if (ci >= 0) {
-            col = ci;
-            text = stripConnector(line, ci);
-          } else {
-            const bare = line.replace(/[│┃╏┆|─╴\-\s]/g, "");
-            if (!bare) continue;
-            if (!root) { col = -1; text = bare; }
-            else { col = (stack.length ? stack[stack.length - 1].col : -1) + 1; text = bare; }
-          }
-          if (!text) continue;
-          if (++count > CAP) return { error: "That tree is too large to import at once." };
-          const node = { text, children: [] };
-          if (!root) { root = node; stack.push({ col: -1, node }); continue; }
-          while (stack.length && stack[stack.length - 1].col >= col) stack.pop();
-          const parent = stack.length ? stack[stack.length - 1].node : root;
-          parent.children.push(node);
-          stack.push({ col, node });
-        }
-        return root ? { root } : { error: "Couldn't read a tree from that." };
       }
       async function buildChildren(parentId, kids, depth) {
         for (const k of kids) {
@@ -1336,11 +1475,301 @@
           importBuildBtn.disabled = false;
           importBuildBtn.textContent = "Build portrait";
         }
+                  }
+      function safeMediaUrl(u) {
+        const s = String(u || "").trim();
+        if (/^https?:\/\//i.test(s)) return true;
+        if (/^data:(image|video|audio)\//i.test(s)) return true;
+        return false;
+      }
+      function inferMediaKind(u) {
+        const s = String(u || "").toLowerCase();
+        if (/^data:image\//.test(s)) return "image";
+        if (/^data:video\//.test(s)) return "video";
+        if (/^data:audio\//.test(s)) return "audio";
+        if (/(youtube\.com|youtu\.be|vimeo\.com)/.test(s)) return "video";
+        if (/\.(mp4|mov|webm|mkv|m4v)(\?|$)/.test(s)) return "video";
+        if (/\.(mp3|wav|ogg|m4a|aac|flac)(\?|$)/.test(s)) return "audio";
+        if (/\.(png|jpe?g|gif|webp|svg|avif|bmp)(\?|$)/.test(s)) return "image";
+        return "link";
+      }
+      function openMedia(url) {
+        if (!safeMediaUrl(url)) return;
+        const fallback = () => { try { const a = document.createElement("a"); a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer"; document.body.appendChild(a); a.click(); a.remove(); } catch {} };
+        try { const w = window.open(url, "_blank", "noopener,noreferrer"); if (!w) fallback(); } catch { fallback(); }
+      }
+      function makeDoorGlyph(nodeId, count) {
+        const door = document.createElement("span");
+        door.className = "mediaDoor";
+        door.title = "media";
+        door.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6" /><path d="M20 4l-9 9" /><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" /></svg>';
+        if (count > 1) { const c = document.createElement("i"); c.className = "mdcount"; c.textContent = String(count); door.appendChild(c); }
+        const stop = (e) => e.stopPropagation();
+        door.addEventListener("pointerdown", stop);
+        door.addEventListener("pointerup", stop);
+        door.addEventListener("click", (e) => { e.stopPropagation(); openMediaManager(nodeId); });
+        return door;
+      }
+      function setMmStatus(msg, err) { mmStatus.textContent = msg || ""; mmStatus.className = "mmstatus" + (err ? " err" : ""); }
+      function openMediaManager(id) {
+        mediaTargetId = id;
+        mediaOverlay.classList.remove("hidden");
+        mmInput.value = "";
+        setMmStatus("");
+        renderMediaManager(id);
+        setTimeout(() => mmInput.focus(), 50);
+      }
+      function closeMediaManager() { mediaOverlay.classList.add("hidden"); mmInput.blur(); }
+      async function renderMediaManager(id) {
+        const node = await get(id);
+        if (!node) { closeMediaManager(); return; }
+        mmTitle.textContent = (node.kind === "link" ? "" : (node.term || "")) || "Media";
+        const doors = node.media || [];
+        mmList.innerHTML = "";
+        if (!doors.length) {
+          const m = document.createElement("div"); m.className = "emptyMsg"; m.textContent = "No doors yet. Paste a link below."; mmList.appendChild(m);
+          return;
+        }
+        for (let i = 0; i < doors.length; i++) {
+          const d = doors[i];
+          const row = document.createElement("div"); row.className = "mmrow";
+          const lab = document.createElement("span"); lab.className = "mmkind"; lab.textContent = d.kind || "link";
+          const url = document.createElement("span"); url.className = "mmurl"; url.textContent = d.url; url.title = d.url;
+          const open = document.createElement("button"); open.type = "button"; open.className = "mmopen"; open.textContent = "Open"; open.addEventListener("click", () => openMedia(d.url));
+          const rm = document.createElement("button"); rm.type = "button"; rm.className = "mmrm"; rm.textContent = "Remove"; rm.addEventListener("click", () => removeMediaDoor(id, i));
+          row.append(lab, url, open, rm);
+          mmList.appendChild(row);
+        }
+      }
+      async function addMediaDoor(id) {
+        const url = String(mmInput.value || "").trim();
+        if (!url) { setMmStatus("Paste a link first.", true); return; }
+        if (!safeMediaUrl(url)) { setMmStatus("That link type isn't allowed.", true); return; }
+        const node = await get(id); if (!node) { closeMediaManager(); return; }
+        const doors = Array.isArray(node.media) ? node.media.slice() : [];
+        doors.push({ url, kind: inferMediaKind(url) });
+        node.media = doors; node.updatedAt = Date.now(); await put(node);
+        mmInput.value = ""; setMmStatus("");
+        await renderMediaManager(id);
+        render();
+      }
+      async function removeMediaDoor(id, index) {
+        const node = await get(id); if (!node) return;
+        const doors = Array.isArray(node.media) ? node.media.slice() : [];
+        doors.splice(index, 1);
+        node.media = doors; node.updatedAt = Date.now(); await put(node);
+        await renderMediaManager(id);
+        render();
       }
 
+      function hexEncode(buf) { const a = new Uint8Array(buf); let o = ""; for (let i = 0; i < a.length; i++) o += ("0" + a[i].toString(16)).slice(-2); return o; }
+      async function fingerprint(str) {
+        const s = String(str || "");
+        try {
+          if (window.crypto && crypto.subtle && crypto.subtle.digest) {
+            const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+            return hexEncode(buf);
+          }
+        } catch {}
+        let h1 = 0x811c9dc5 >>> 0, h2 = 0x01000193 >>> 0;
+        for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0; h2 = Math.imul(h2 ^ c, 0x811c9dc5) >>> 0; }
+        return ("00000000" + h1.toString(16)).slice(-8) + ("00000000" + h2.toString(16)).slice(-8);
+      }
+      function scanAllNodes() {
+        return new Promise((res, rej) => {
+          const out = [];
+          const tx = db.transaction(STORE, "readonly");
+          const req = tx.objectStore(STORE).openCursor();
+          req.onsuccess = (e) => { const c = e.target.result; if (!c) { res(out); return; } out.push(c.value); c.continue(); };
+          req.onerror = () => rej(req.error);
+        });
+      }
+      function normalizeNodeForExport(n) {
+        const o = { id: n.id, parentId: n.parentId || "", term: n.term || "", termLower: n.termLower || "", kind: n.kind || "node", targetId: n.targetId || "", collapsed: !!n.collapsed, order: n.order || 0, childCount: n.childCount || 0, descendantCount: n.descendantCount || 0, maxDepth: n.maxDepth || 0, createdAt: n.createdAt || 0, updatedAt: n.updatedAt || 0 };
+        if (Array.isArray(n.media) && n.media.length) o.media = n.media.map((d) => ({ url: d.url, kind: d.kind || inferMediaKind(d.url) }));
+        return o;
+      }
+      function serializeLibrary(nodes, recents) {
+        const ns = nodes.slice().sort((a, b) => String(a.id).localeCompare(String(b.id))).map(normalizeNodeForExport);
+        return JSON.stringify({ nodes: ns, recents: Array.isArray(recents) ? recents.slice() : [] });
+      }
+      function countsOfPayload(nodes) {
+        let doors = 0, portraits = 0;
+        for (const n of nodes) { if (n.parentId === "" && n.kind !== "link") portraits++; if (Array.isArray(n.media)) doors += n.media.length; }
+        return { words: nodes.length, portraits, doors };
+      }
+      async function buildBackupEnvelope() {
+        const nodes = await scanAllNodes();
+        const recents = getRecents();
+        const data = serializeLibrary(nodes, recents);
+        const checksum = await fingerprint(data);
+        const c = countsOfPayload(nodes);
+        const env = { format: "cosmos-backup", version: 1, exportedAt: Date.now(), counts: c, checksum, data };
+        return { text: JSON.stringify(env), counts: c };
+      }
+      async function currentLibraryCounts() { const nodes = await scanAllNodes(); return countsOfPayload(nodes); }
+      function exportFilename() {
+        const d = new Date(); const p = (x) => String(x).padStart(2, "0");
+        return "cosmos-backup-" + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + "-" + p(d.getHours()) + p(d.getMinutes()) + ".json";
+      }
+      function downloadText(name, text) {
+        try {
+          const blob = new Blob([text], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a"); a.href = url; a.download = name;
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 4000);
+        } catch {}
+      }
+      async function copyText(text) {
+        try { await navigator.clipboard.writeText(text); return true; } catch {}
+        try {
+          const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+          document.body.appendChild(ta); ta.select(); const ok = document.execCommand("copy"); ta.remove(); return ok;
+        } catch { return false; }
+      }
+      async function shareText(name, text) {
+        try { if (navigator.share) { await navigator.share({ title: name, text }); return true; } } catch {}
+        return false;
+      }
+      async function validateBackupEnvelope(text) {
+        let obj; try { obj = JSON.parse(text); } catch { return { ok: false, error: "That isn't a readable backup file." }; }
+        if (!obj || obj.format !== "cosmos-backup") return { ok: false, error: "This file isn't a Cosmos backup." };
+        if (typeof obj.version !== "number") return { ok: false, error: "Malformed backup." };
+        if (obj.version > 1) return { ok: false, error: "This backup is from a newer Cosmos — update the app before restoring." };
+        if (typeof obj.data !== "string" || typeof obj.checksum !== "string") return { ok: false, error: "Malformed backup." };
+        const fp = await fingerprint(obj.data);
+        if (fp !== obj.checksum) return { ok: false, error: "Checksum mismatch — the file is corrupted or truncated. Nothing was changed." };
+        let lib; try { lib = JSON.parse(obj.data); } catch { return { ok: false, error: "Backup contents are unreadable." }; }
+        if (!lib || !Array.isArray(lib.nodes)) return { ok: false, error: "Backup has no words." };
+        if (lib.nodes.length === 0) return { ok: false, error: "This backup is empty — refusing to restore over your library." };
+        const idSet = new Set();
+        for (const n of lib.nodes) {
+          if (!n || typeof n.id !== "string" || !n.id) return { ok: false, error: "Backup contains a word with no id." };
+          if (typeof n.parentId !== "string") n.parentId = "";
+          if (!n.kind) n.kind = "node";
+          idSet.add(n.id);
+        }
+        let unsafeDoors = 0;
+        for (const n of lib.nodes) {
+          if (n.kind === "link") { if (!n.targetId || !idSet.has(n.targetId)) return { ok: false, error: "Backup contains a link to a word that isn't in the file. Nothing was changed." }; }
+          if (Array.isArray(n.media)) {
+            const clean = [];
+            for (const d of n.media) { if (d && typeof d.url === "string" && safeMediaUrl(d.url)) clean.push({ url: d.url, kind: d.kind || inferMediaKind(d.url) }); else unsafeDoors++; }
+            if (clean.length) n.media = clean; else delete n.media;
+          }
+        }
+        const recents = Array.isArray(lib.recents) ? lib.recents.filter((id) => idSet.has(id)) : [];
+        return { ok: true, nodes: lib.nodes, recents, counts: countsOfPayload(lib.nodes), unsafeDoors };
+      }
+      async function commitReplace(nodes, recents) {
+        const old = await scanAllNodes();
+        const oldRecents = getRecents();
+        undoNodes = old; undoRecents = oldRecents;
+        await new Promise((res, rej) => {
+          const tx = db.transaction(STORE, "readwrite");
+          const st = tx.objectStore(STORE);
+          st.clear();
+          for (const n of nodes) st.put(n);
+          tx.oncomplete = () => res();
+          tx.onerror = () => rej(tx.error);
+          tx.onabort = () => rej(tx.error);
+        });
+        setRecents(Array.isArray(recents) ? recents : []);
+      }
+      async function undoReplace() {
+        if (!undoNodes) return;
+        const nodes = undoNodes, recents = undoRecents || [];
+        await new Promise((res, rej) => {
+          const tx = db.transaction(STORE, "readwrite");
+          const st = tx.objectStore(STORE);
+          st.clear();
+          for (const n of nodes) st.put(n);
+          tx.oncomplete = () => res();
+          tx.onerror = () => rej(tx.error);
+          tx.onabort = () => rej(tx.error);
+        });
+        setRecents(recents);
+        undoNodes = null; undoRecents = null;
+        hideUndoBar();
+        await render();
+      }
+
+      function setExportStatus(m, err) { exportStatus.textContent = m || ""; exportStatus.className = "mmstatus" + (err ? " err" : ""); }
+      function openExport() { exportOverlay.classList.remove("hidden"); runExport(); }
+      function closeExport() { exportOverlay.classList.add("hidden"); }
+      async function runExport() {
+        setExportStatus("Building…", false);
+        try {
+          const { text, counts } = await buildBackupEnvelope();
+          exportData.value = text;
+          exportStats.textContent = counts.words + " words · " + counts.portraits + " portraits · " + counts.doors + " doors";
+          setExportStatus("", false);
+        } catch { setExportStatus("Couldn't build the backup.", true); }
+      }
+
+      function setImportSrcStatus(m, err) { importSrcStatus.textContent = m || ""; importSrcStatus.className = "mmstatus" + (err ? " err" : ""); }
+      function openImportSrc() { importSrcOverlay.classList.remove("hidden"); importSrcInput.value = ""; importFile.value = ""; setImportSrcStatus("", false); setTimeout(() => importSrcInput.focus(), 50); }
+      function closeImportSrc() { importSrcOverlay.classList.add("hidden"); }
+      function loadImportFile(file) {
+        if (!file) return;
+        const r = new FileReader();
+        r.onload = () => finishImport(String(r.result || ""));
+        r.onerror = () => setImportSrcStatus("Couldn't read that file.", true);
+        r.readAsText(file);
+      }
+      function loadImportPaste() { finishImport(String(importSrcInput.value || "")); }
+      async function finishImport(text) {
+        if (!text.trim()) { setImportSrcStatus("Nothing to check — choose a file or paste text.", true); return; }
+        setImportSrcStatus("Checking…", false);
+        const v = await validateBackupEnvelope(text);
+        if (!v.ok) { setImportSrcStatus(v.error, true); return; }
+        closeImportSrc();
+        openConfirm(v);
+      }
+
+      function setConfirmStatus(m, err) { confirmStatus.textContent = m || ""; confirmStatus.className = "mmstatus" + (err ? " err" : ""); }
+      function openConfirm(v) {
+        confirmData = v;
+        confirmOverlay.classList.remove("hidden");
+        confirmStats.textContent = "Backup: " + v.counts.words + " words · " + v.counts.portraits + " portraits · " + v.counts.doors + " doors" + (v.unsafeDoors ? (" · " + v.unsafeDoors + " unsafe link(s) dropped") : "");
+        confirmCurrent.textContent = "Checking your current library…";
+        setConfirmStatus("", false);
+        currentLibraryCounts().then((c) => { confirmCurrent.textContent = "Your current library: " + c.words + " words."; });
+      }
+      function closeConfirm() { confirmOverlay.classList.add("hidden"); confirmData = null; }
+      async function doSaveCurrentFirst() {
+        setConfirmStatus("Saving your current library…", false);
+        try { const { text } = await buildBackupEnvelope(); downloadText(exportFilename(), text); setConfirmStatus("Saved a backup of your current library.", false); }
+        catch { setConfirmStatus("Couldn't save.", true); }
+      }
+      async function doReplace() {
+        if (!confirmData) return;
+        setConfirmStatus("Restoring…", false);
+        try {
+          await commitReplace(confirmData.nodes, confirmData.recents);
+          closeConfirm();
+          await render();
+          showUndoBar();
+        } catch { setConfirmStatus("Restore failed — your data is unchanged.", true); }
+      }
+
+      function showUndoBar() { undoBar.classList.remove("hidden"); }
+      function hideUndoBar() { undoBar.classList.add("hidden"); }
+      function setUndoStatus(m) { undoStatus.textContent = m || ""; }
+      async function doUndo() {
+        if (!undoNodes) return;
+        setUndoStatus("Undoing…");
+        try { await undoReplace(); setUndoStatus(""); }
+        catch { setUndoStatus("Undo failed."); }
+                                    }
       function bindEvents() {
         backBtn.addEventListener("click", async () => {
           if (selectMode) { exitSelectMode(); return; }
+          if (!mediaOverlay.classList.contains("hidden")) { closeMediaManager(); return; }
+          if (!confirmOverlay.classList.contains("hidden")) { closeConfirm(); return; }
+          if (!importSrcOverlay.classList.contains("hidden")) { closeImportSrc(); return; }
+          if (!exportOverlay.classList.contains("hidden")) { closeExport(); return; }
           if (!searchOverlay.classList.contains("hidden")) { closeSearch(); return; }
           if (!linkOverlay.classList.contains("hidden")) { closeLink(); return; }
           if (!moveOverlay.classList.contains("hidden")) { closeMove(); return; }
@@ -1358,6 +1787,30 @@
         importCloseBtn.addEventListener("click", closeImport);
         importCancelBtn.addEventListener("click", closeImport);
         importBuildBtn.addEventListener("click", runImport);
+
+        mmClose.addEventListener("click", closeMediaManager);
+        mmCancel.addEventListener("click", closeMediaManager);
+        mmAdd.addEventListener("click", () => addMediaDoor(mediaTargetId));
+        mmInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); addMediaDoor(mediaTargetId); } });
+
+        exportCloseBtn.addEventListener("click", closeExport);
+        exportDownloadBtn.addEventListener("click", () => { downloadText(exportFilename(), exportData.value); setExportStatus("Downloaded.", false); });
+        exportCopyBtn.addEventListener("click", async () => { const ok = await copyText(exportData.value); setExportStatus(ok ? "Copied to clipboard." : "Copy failed — select the text above.", !ok); });
+        exportShareBtn.addEventListener("click", async () => { const ok = await shareText("Cosmos backup", exportData.value); if (!ok) setExportStatus("Sharing not available — use Download or Copy.", true); });
+
+        importSrcCloseBtn.addEventListener("click", closeImportSrc);
+        importSrcCancelBtn.addEventListener("click", closeImportSrc);
+        importSrcLoadBtn.addEventListener("click", loadImportPaste);
+        importFileBtn.addEventListener("click", () => importFile.click());
+        importFile.addEventListener("change", (e) => { const f = e.target.files && e.target.files[0]; if (f) loadImportFile(f); });
+
+        confirmCloseBtn.addEventListener("click", closeConfirm);
+        confirmSaveFirstBtn.addEventListener("click", doSaveCurrentFirst);
+        confirmReplaceBtn.addEventListener("click", doReplace);
+
+        undoBtn.addEventListener("click", doUndo);
+        undoDismiss.addEventListener("click", () => { undoNodes = null; undoRecents = null; hideUndoBar(); });
+
         searchBtn.addEventListener("click", openSearch);
         closeSearchBtn.addEventListener("click", closeSearch);
         searchInput.addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(runSearch, 180); });
@@ -1397,122 +1850,8 @@
             pruneRecents(ids);
             const cur = await get(state.currentId);
             if (!cur || cur.parentId !== "" || cur.kind === "link") { state.currentId = ""; currentDepth = 0; history.replaceState({ id: "", depth: 0 }, "", urlForId("")); }
-            selectMode = false; selectedIds = new Set(); updateSelBar();
-            await render();
-            if (searchIsOpen()) await runSearch();
-            if (!atlasOverlay.classList.contains("hidden")) await renderAtlas();
-            return;
-          }
-          if (!pendingActionId) return;
-          const doomed = pendingActionId;
-          await deleteNode(doomed);
-          pruneRecents(doomed);
-          if (selectMode && selectedIds.has(doomed)) { selectedIds.delete(doomed); updateSelBar(); }
-          const cur = await get(state.currentId);
-          if (!cur || cur.parentId !== "" || cur.kind === "link") pushTo("");
-          else await render();
-          if (searchIsOpen()) await runSearch();
-          if (!atlasOverlay.classList.contains("hidden")) await renderAtlas();
-        });
-
-        mCancel.addEventListener("click", () => actionDialog.close());
-        mOpen.addEventListener("click", async () => {
-          actionDialog.close();
-          const n = await get(pendingActionId); if (!n || n.kind !== "link" || !n.targetId) return;
-          pushTo(n.targetId);
-        });
-        mUnlink.addEventListener("click", async () => {
-          actionDialog.close();
-          const n = await get(pendingActionId); if (!n || n.kind !== "link") return;
-          await deleteNode(pendingActionId); await render();
-        });
-        mAdd.addEventListener("click", () => { actionDialog.close(); addTargetId = pendingActionId; addTitle.textContent = "New child"; addInput.value = ""; addDialog.showModal(); setTimeout(() => addInput.focus(), 50); });
-        mLink.addEventListener("click", () => { actionDialog.close(); openLinkPicker(pendingActionId); });
-        mRename.addEventListener("click", async () => {
-          actionDialog.close();
-          const n = await get(pendingActionId); if (!n || n.kind === "link") return;
-          renameInput.value = n.term; renameDialog.showModal();
-          setTimeout(() => { renameInput.focus(); renameInput.select(); }, 50);
-        });
-        mMove.addEventListener("click", async () => {
-          actionDialog.close();
-          const n = await get(pendingActionId); if (!n || n.kind === "link" || n.parentId === "") return;
-          moveBatch = false; await openMovePicker(pendingActionId);
-        });
-        mPromote.addEventListener("click", async () => {
-          actionDialog.close();
-          const n = await get(pendingActionId); if (!n || n.kind === "link" || n.parentId === "") return;
-          await promoteNode(pendingActionId); pushTo(pendingActionId, true);
-        });
-        mDelete.addEventListener("click", async () => {
-          actionDialog.close();
-          const n = await get(pendingActionId); if (!n) return;
-          deleteBatch = false;
-          deleteMsg.textContent = (n.childCount || 0) > 0 ? "Delete this word and everything inside it?" : "Delete this word?";
-          deleteDialog.showModal();
-        });
-        mSelect.addEventListener("click", () => { actionDialog.close(); if (pendingActionId) enterSelectMode(pendingActionId); });
-
-        selClearBtn.addEventListener("click", () => exitSelectMode());
-        selDeleteBtn.addEventListener("click", () => {
-          if (selectedIds.size === 0) return;
-          deleteBatch = true;
-          const n = selectedIds.size;
-          deleteMsg.textContent = n === 1 ? "Delete this word and everything inside it?" : ("Delete " + n + " words and everything inside them?");
-          deleteDialog.showModal();
-        });
-        selMoveBtn.addEventListener("click", async () => {
-          if (selectedIds.size === 0) return;
-          moveBatch = true;
-          const first = Array.from(selectedIds)[0];
-          await openMovePicker(first);
-        });
-
-        moveBackBtn.addEventListener("click", async () => {
-          if (!movePickerId) { closeMove(); return; }
-          const n = await get(movePickerId);
-          movePickerId = n ? (n.parentId || "") : "";
-          await renderMove();
-        });
-        moveCancelBtn.addEventListener("click", closeMove);
-        moveSearchInput.addEventListener("input", () => { clearTimeout(moveTimer); moveTimer = setTimeout(renderMove, 180); });
-        moveConfirmBtn.addEventListener("click", async () => {
-          const batch = moveBatch; const source = moveSourceId; const target = movePickerId;
-          if (!batch && !source) return;
-          if (!target) { closeMove(); return; }
-          if (moveExcludedSet && moveExcludedSet.has(target)) { closeMove(); return; }
-          const ids = batch ? Array.from(selectedIds) : [source];
-          closeMove();
-          for (const id of ids) {
-            const node = await get(id); if (!node) continue;
-            if (id === target) continue;
-            if ((node.parentId || "") === target) continue;
-            await moveNode(id, target);
-          }
-          if (batch) { selectMode = false; selectedIds = new Set(); updateSelBar(); }
-          const destRoot = await rootOf(target);
-          pushTo(destRoot || "", true);
-        });
-
-        window.addEventListener("popstate", (e) => {
-          const nextId = e.state?.id ?? idFromHash();
-          currentDepth = e.state?.depth ?? 0;
-          state.currentId = nextId;
-          render();
-        });
-        document.addEventListener("keydown", (e) => {
-          if (e.key === "Escape") {
-            if (selectMode) { exitSelectMode(); return; }
-            if (!searchOverlay.classList.contains("hidden")) closeSearch();
-            else if (!linkOverlay.classList.contains("hidden")) closeLink();
-            else if (!moveOverlay.classList.contains("hidden")) closeMove();
-            else if (!atlasOverlay.classList.contains("hidden")) closeAtlas();
-            else if (!importOverlay.classList.contains("hidden")) closeImport();
-          }
-        });
-      }
-
-      async function init() {
+            selectMode = false; select
+            async function init() {
         try { db = await openDB(); } catch (error) {
           console.error(error);
           document.body.innerHTML = '<p style="padding:2rem;font-family:sans-serif;color:#e8eaf0;">This app needs local browser storage.</p>';
