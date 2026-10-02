@@ -1,4 +1,4 @@
-const CACHE_NAME = "word-cosmos-v16";
+const CACHE_NAME = "word-cosmos-v17";
 
 const ASSETS = [
   "./wordmos.html",
