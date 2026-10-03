@@ -1,0 +1,17 @@
+{
+  "name": "Cosmos",
+  "short_name": "Cosmos",
+  "description": "A search-first library of per-concept portraits.",
+  "start_url": "./wordmos_v4.html",
+  "display": "standalone",
+  "background_color": "#07080c",
+  "theme_color": "#07080c",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
