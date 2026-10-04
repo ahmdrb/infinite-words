@@ -287,7 +287,7 @@
     </div>
   </div>
 
-  <div id="exportOverlay" class="overlay hidden" role="dialog" aria-label="">
+  <div id="exportOverlay" class="overlay hidden" role="dialog" aria-label="Export baup">
     <header class="topbar">
       <button id="exportCloseBtn" class="iconbtn" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" /></svg></button>
       <div class="titles"><h1></h1><div class="path">one file = your whole cosmos</div></div>
@@ -1050,18 +1050,7 @@
             rec.appendChild(b);
           }
           list.appendChild(rec);
-        }
-
-        const foot = document.createElement("div");
-        foot.className = "homefoot";
-        const eb = document.createElement("button");
-        eb.type = "button"; eb.className = "hflink"; eb.textContent = "";
-        eb.addEventListener("click", openExport);
-        const ib = document.createElement("button");
-        ib.type = "button"; ib.className = "hflink"; ib.textContent = "";
-        ib.addEventListener("click", openImportSrc);
-        foot.append(eb, ib);
-        list.appendChild(foot);
+        
       }
 
       async function render() {
