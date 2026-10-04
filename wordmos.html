@@ -1048,6 +1048,14 @@
           list.appendChild(rec);
         }
 
+        const foot = document.createElement("div");
+        foot.className = "homefoot";
+        const eb = document.createElement("button");
+        eb.addEventListener("click", openExport);
+        const ib = document.createElement("button");
+        ib.addEventListener("click", openImportSrc);
+        foot.append(eb, ib);
+        list.appendChild(foot);
       }
 
       async function render() {
