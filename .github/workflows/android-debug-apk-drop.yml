@@ -1,0 +1,52 @@
+name: Build Wordmos APK (apk-drop)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - apk-drop
+    paths:
+      - 'native-cosmos/native/**'
+      - '.github/workflows/android-debug-apk-drop.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout apk-drop
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Configure Gradle caching
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install Android SDK 35
+        run: |
+          SDKMANAGER="$(find "${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools" -type f -name sdkmanager -print -quit 2>/dev/null || true)"
+          if [ -z "$SDKMANAGER" ]; then
+            echo "Android sdkmanager was not found on the runner."
+            exit 1
+          fi
+          "$SDKMANAGER" --install "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Build debug APK from apk-drop
+        working-directory: native-cosmos/native
+        run: ./gradlew --no-daemon assembleDebug
+
+      - name: Upload apk-drop debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: wordmos-apk-drop-debug
+          path: native-cosmos/native/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
